@@ -1,10 +1,25 @@
-import javax.swing.JFrame;
+import javax.swing.*;
+import java.awt.*;
 
 public class MainWindow extends JFrame {
 	public MainWindow() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setSize(800, 600);
 
+		Container pane = getContentPane();
+
+		JToolBar toolBar = new JToolBar();
+		pane.add(toolBar, BorderLayout.PAGE_START);
+
+		JButton sampleButton = new JButton("Test");
+		toolBar.add(sampleButton);
+
+		MainArea mainArea = new MainArea();
+		pane.add(mainArea, BorderLayout.CENTER);
+
+		Rectangle rect = new Rectangle(0, 0, 100, 100);
+		mainArea.addSolid(rect);
+
+		pack();
 		setVisible(true);
 	}
 }

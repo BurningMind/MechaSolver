@@ -1,13 +1,14 @@
-public class Solid {
+import java.awt.*;
 
-public boolean attachedToGround;
-public int nbSolids, nbJoints, nbParameters;
+abstract public class Solid {
+    public boolean attachedToGround;
+    public int nbSolids, nbJoints, nbParameters;
+
+    public int m_x, m_y;
 
     public Solid () {
 
     }
 
-    public boolean is () {
-
-    }
+    abstract public void draw(Graphics g);
 }
