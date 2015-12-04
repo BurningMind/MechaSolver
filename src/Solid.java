@@ -1,8 +1,9 @@
 import java.awt.*;
 
 abstract public class Solid {
-    public boolean attachedToGround;
-    public int nbSolids, nbJoints, nbParameters;
+    public int nbSolids, nbJoints;
+    public double height, length;
+    public Point origin;
 
     public int m_x, m_y;
 
@@ -11,4 +12,8 @@ abstract public class Solid {
     }
 
     abstract public void draw(Graphics g);
+
+    public boolean isFixed (Solid otherSolid) {
+
+    }
 }
