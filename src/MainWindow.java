@@ -16,7 +16,8 @@ public class MainWindow extends JFrame {
 		MainArea mainArea = new MainArea();
 		pane.add(mainArea, BorderLayout.CENTER);
 
-		Rectangle rect = new Rectangle(0, 0, 100, 100);
+		Point oRect = new Point (0,0);
+		Rectangle rect = new Rectangle(oRect, 100, 100);
 		mainArea.addSolid(rect);
 
 		pack();

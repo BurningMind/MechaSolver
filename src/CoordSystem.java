@@ -9,4 +9,9 @@ public class CoordSystem {
         m_vecZ = vecZ;
         m_origin = origin;
     }
+
+    public double rotation ( CoordSystem otherCoordSystem) {
+        double retRotation = (double) (m_vecZ.m_angleToGround - otherCoordSystem.m_vecZ.m_angleToGround);
+        return retRotation;
+    }
 }
