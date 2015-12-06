@@ -15,6 +15,7 @@ public class MainArea extends JPanel {
 	}
 
 	public void paint(Graphics g) {
+		g.clearRect(0, 0, getWidth(), getHeight());
 		for (Solid s : m_solids) {
 			s.draw(g);
 		}

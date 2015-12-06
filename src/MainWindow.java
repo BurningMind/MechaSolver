@@ -1,25 +1,40 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
 
-public class MainWindow extends JFrame {
+public class MainWindow extends JFrame implements ActionListener {
+	JButton m_addSolidButton;
+	MainArea m_mainArea;
+	NewSolidDialog m_newSolidDialog;
+
 	public MainWindow() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+		m_newSolidDialog = new NewSolidDialog(this);
 
 		Container pane = getContentPane();
 
 		JToolBar toolBar = new JToolBar();
 		pane.add(toolBar, BorderLayout.PAGE_START);
 
-		JButton sampleButton = new JButton("Test");
-		toolBar.add(sampleButton);
+		m_addSolidButton = new JButton("Add Solid");
+		m_addSolidButton.addActionListener(this);
+		toolBar.add(m_addSolidButton);
 
-		MainArea mainArea = new MainArea();
-		pane.add(mainArea, BorderLayout.CENTER);
-
-		Rectangle rect = new Rectangle(0, 0, 100, 100);
-		mainArea.addSolid(rect);
+		m_mainArea = new MainArea();
+		pane.add(m_mainArea, BorderLayout.CENTER);
 
 		pack();
 		setVisible(true);
+	}
+
+	public void actionPerformed(ActionEvent e) {
+		if (e.getSource() == m_addSolidButton) {
+			m_newSolidDialog.setVisible(true);
+		}
+	}
+
+	public void addSolid(Solid solid) {
+		m_mainArea.addSolid(solid);
 	}
 }
