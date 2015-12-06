@@ -6,6 +6,7 @@ abstract public class Solid {
     public Point m_origin;
     public CoordSystem m_coordSystem;
 
+    //Constructor
     public Solid (Point origin, double angleToGround) {
         m_origin = origin;
         m_coordSystem.m_angleToGround = m_angleToGround;
@@ -13,12 +14,14 @@ abstract public class Solid {
 
     abstract public void draw(Graphics g);
 
+    //Takes another Solid and returns whether the two solids are fixed
     public boolean isFixed (Solid otherSolid) {
         return true;
     }
 
-    public double rotation ( CoordSystem otherCoordSystem) {
-        double retRotation = (double) (otherCoordSystem.m_vecX.m_angleToGround - m_vecX.m_angleToGround);
+    //Returns the angle with respect to another Solid
+    public double rotation ( Solid otherSolid) {
+        double retRotation = (double) (otherSolid.m_angleToGround - m_angleToGround);
         return retRotation;
     }
 }

@@ -2,6 +2,7 @@ import java.awt.*;
 
 public class Rectangle extends Solid {
 
+	//Constructor
 	public Rectangle(Point origin, int height, int width, double angleToGround) {
 		super (origin, angleToGround);
 		m_origin = origin;

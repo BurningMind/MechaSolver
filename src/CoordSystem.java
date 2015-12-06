@@ -4,6 +4,7 @@ public class CoordSystem {
     public Point m_origin;
     public double m_angleToGround;
 
+    //Constructor
     public CoordSystem (Vector vecX, Vector vecY, Vector vecZ, Point origin) {
         m_vecX = vecX;
         m_vecY = vecY;
@@ -12,6 +13,7 @@ public class CoordSystem {
         m_angleToGround = m_vecX.m_angleToGround;
     }
 
+    //Returns the angle with respect to another CoordSystem
     public double rotation ( CoordSystem otherCoordSystem) {
         double retRotation = (double) (otherCoordSystem.m_angleToGround - m_angleToGround);
         return retRotation;
