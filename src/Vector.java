@@ -8,4 +8,9 @@ public class Vector {
         m_angleToGround = angleToGround;
 
     }
+
+    public double angle ( Vector otherVector) {
+        double retRotation = (double) (otherVector.m_angleToGround - m_angleToGround);
+        return retRotation;
+    }
 }
