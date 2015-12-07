@@ -9,7 +9,7 @@ abstract public class Solid {
     //Constructor
     public Solid (Point origin, double angleToGround) {
         m_origin = origin;
-        //m_coordSystem.m_angleToGround = m_angleToGround; FIXME: causes NullPtrExcept because m_coordSystem is not initialized.
+        m_coordSystem = new CoordSystem (origin, angleToGround);
     }
 
     abstract public void draw(Graphics g);

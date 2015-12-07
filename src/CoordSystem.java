@@ -5,10 +5,9 @@ public class CoordSystem {
     public double m_angleToGround;
 
     //Constructor
-    public CoordSystem (Vector vecX, Vector vecY, Vector vecZ, Point origin) {
-        m_vecX = vecX;
-        m_vecY = vecY;
-        m_vecZ = vecZ;
+    public CoordSystem (Point origin, double angleToGround) {
+        m_vecX = new Vector ( origin, angleToGround);
+        m_vecY = new Vector ( origin, angleToGround + Math.PI/2.0);
         m_origin = origin;
         m_angleToGround = m_vecX.m_angleToGround;
     }

@@ -6,7 +6,5 @@ public class Prismatic extends Joint {
         m_rotZ = false;
         m_transX = true;
         m_transY = true;
-
     }
-
 }

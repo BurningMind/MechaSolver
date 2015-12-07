@@ -9,9 +9,12 @@ public class NewSolidDialog extends JDialog implements ActionListener {
 
 	JPanel m_cards;
 	JPanel m_rectCard;
+	JPanel m_lineCard;
 
 	JFormattedTextField m_rectWField;
 	JFormattedTextField m_rectHField;
+	JFormattedTextField m_lineLField;
+	JFormattedTextField m_lineAField;
 
 	JButton m_okButton;
 	JButton m_cancelButton;
@@ -21,7 +24,7 @@ public class NewSolidDialog extends JDialog implements ActionListener {
 
 		Container pane = getContentPane();
 
-		String[] solidTypes = {"Rectangle"};
+		String[] solidTypes = {"Rectangle", "Line"};
 
 		m_comboBox = new JComboBox<String>(solidTypes);
 		m_comboBox.addActionListener(this);
@@ -37,8 +40,18 @@ public class NewSolidDialog extends JDialog implements ActionListener {
 		m_rectCard.add(new JLabel("Height:"));
 		m_rectCard.add(m_rectHField);
 
+		m_lineCard = new JPanel();
+		m_lineCard.setLayout(new GridLayout(0, 2));
+		m_lineLField = new JFormattedTextField(NumberFormat.getNumberInstance());
+		m_lineAField = new JFormattedTextField(NumberFormat.getNumberInstance());
+		m_lineCard.add(new JLabel("Length:"));
+		m_lineCard.add(m_lineLField);
+		m_lineCard.add(new JLabel("Angle:"));
+		m_lineCard.add(m_lineAField);
+
 		m_cards = new JPanel(new CardLayout());
 		m_cards.add(m_rectCard, "Rectangle");
+		m_cards.add(m_lineCard, "Line");
 
 		pane.add(m_cards, BorderLayout.CENTER);
 
@@ -61,6 +74,9 @@ public class NewSolidDialog extends JDialog implements ActionListener {
 			if (m_comboBox.getSelectedItem().toString() == "Rectangle") {
 				CardLayout cl = (CardLayout)(m_cards.getLayout());
 				cl.show(m_cards, "Rectangle");
+			} else if (m_comboBox.getSelectedItem().toString() == "Line") {
+				CardLayout cl = (CardLayout)(m_cards.getLayout());
+				cl.show(m_cards, "Line");
 			}
 		} else if (e.getSource() == m_okButton) {
 			Solid new_solid;

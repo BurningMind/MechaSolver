@@ -28,7 +28,7 @@ public class MainWindow extends JFrame implements ActionListener {
 		pack();
 		setVisible(true);
 	}
-
+	
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == m_addSolidButton) {
 			m_newSolidDialog.setVisible(true);
