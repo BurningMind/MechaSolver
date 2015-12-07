@@ -7,6 +7,7 @@ public class MainWindow extends JFrame implements ActionListener {
 	MainArea m_mainArea;
 	NewSolidDialog m_newSolidDialog;
 
+	//Constructor
 	public MainWindow() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 

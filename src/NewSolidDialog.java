@@ -65,7 +65,8 @@ public class NewSolidDialog extends JDialog implements ActionListener {
 		} else if (e.getSource() == m_okButton) {
 			Solid new_solid;
 			if (m_comboBox.getSelectedItem().toString() == "Rectangle") {
-				new_solid = new Rectangle(0, 0, Integer.parseInt(m_rectWField.getText()), Integer.parseInt(m_rectHField.getText()));
+				new_solid = new Rectangle(new Point(0, 0), Integer.parseInt(m_rectWField.getText()), Integer.parseInt(m_rectHField.getText()),
+				0.0);
 			} else {
 				return;
 			}
