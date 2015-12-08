@@ -14,7 +14,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 	public MainWindow m_mainWindow;
 	public Mode m_mode = Mode.NONE;
 
-	private Point m_tempPoint;
+	private Joint m_tempJoint;
 
 	public MainArea(MainWindow mainWindow) {
 		m_mainWindow = mainWindow;
@@ -26,16 +26,42 @@ public class MainArea extends JPanel implements MouseInputListener {
 		for (Solid s : m_mainWindow.m_solids) {
 			s.draw(g);
 		}
+		for (Joint j : m_mainWindow.m_joints) {
+			j.draw(g);
+		}
 	}
 
 	public void mouseClicked(MouseEvent e) {
 		if (m_mode == Mode.LINE1) {
-			m_tempPoint = new Point(e.getX(), e.getY());
+			Joint joint = null;
+			for (Joint j : m_mainWindow.m_joints) {
+				int x = e.getX() - j.m_pContact.m_x;
+				int y = e.getY() - j.m_pContact.m_y;
+				if (Math.sqrt(x*x + y*y) <= 10) {
+					joint = j;
+					break;
+				}
+			}
+
+			if (joint == null)
+				return;
+
+			m_tempJoint = joint;
 			m_mode = Mode.LINE2;
 		} else if (m_mode == Mode.LINE2) {
-			int x = e.getX() - m_tempPoint.m_x;
-			int y = e.getY() - m_tempPoint.m_y;
-			m_mainWindow.m_solids.add(new Line(m_tempPoint, Math.sqrt(x * x + y * y), Math.atan2(y, x)));
+			int x = e.getX() - m_tempJoint.m_pContact.m_x;
+			int y = e.getY() - m_tempJoint.m_pContact.m_y;
+			Line new_line = new Line(m_tempJoint.m_pContact, Math.sqrt(x * x + y * y), Math.atan2(y, x));
+			m_mainWindow.m_solids.add(new_line);
+
+			m_tempJoint.m_s2 = new_line;
+
+			repaint();
+
+			m_mode = Mode.NONE;
+		} else if (m_mode == Mode.REVOLUTE) {
+			Point p = new Point(e.getX(), e.getY());
+			m_mainWindow.m_joints.add(new Revolute(null, null, p, p, p));
 
 			repaint();
 
