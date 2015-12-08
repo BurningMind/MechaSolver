@@ -1,9 +1,9 @@
 public class Point {
 
-    public double m_x, m_y;
+    public int m_x, m_y;
 
     //Constructor
-    public Point (double x, double y) {
+    public Point (int x, int y) {
         m_x = x;
         m_y = y;
     }

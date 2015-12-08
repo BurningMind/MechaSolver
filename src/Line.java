@@ -10,6 +10,6 @@ public class Line extends Solid {
 	}
 
 	public void draw(Graphics g) {
-		g.drawLine((int)m_coordSystem.m_origin.m_x, (int)m_coordSystem.m_origin.m_y, (int)(m_coordSystem.m_origin.m_x + Math.cos(m_coordSystem.m_angleToGround) * m_length), (int)(m_coordSystem.m_origin.m_x + Math.sin(m_coordSystem.m_angleToGround) * m_length));
+		g.drawLine((int)m_coordSystem.m_origin.m_x, (int)m_coordSystem.m_origin.m_y, (int)(m_coordSystem.m_origin.m_x + Math.cos(m_coordSystem.m_angleToGround) * m_length), (int)(m_coordSystem.m_origin.m_y + Math.sin(m_coordSystem.m_angleToGround) * m_length));
 	}
 }
