@@ -14,7 +14,6 @@ public class NewSolidDialog extends JDialog implements ActionListener {
 	JFormattedTextField m_rectWField;
 	JFormattedTextField m_rectHField;
 	JFormattedTextField m_lineLField;
-	JFormattedTextField m_lineAField;
 
 	JButton m_okButton;
 	JButton m_cancelButton;
@@ -43,11 +42,8 @@ public class NewSolidDialog extends JDialog implements ActionListener {
 		m_lineCard = new JPanel();
 		m_lineCard.setLayout(new GridLayout(0, 2));
 		m_lineLField = new JFormattedTextField(NumberFormat.getNumberInstance());
-		m_lineAField = new JFormattedTextField(NumberFormat.getNumberInstance());
 		m_lineCard.add(new JLabel("Length:"));
 		m_lineCard.add(m_lineLField);
-		m_lineCard.add(new JLabel("Angle:"));
-		m_lineCard.add(m_lineAField);
 
 		m_cards = new JPanel(new CardLayout());
 		m_cards.add(m_rectCard, "Rectangle");
@@ -81,7 +77,10 @@ public class NewSolidDialog extends JDialog implements ActionListener {
 		} else if (e.getSource() == m_okButton) {
 			Solid new_solid;
 			if (m_comboBox.getSelectedItem().toString() == "Rectangle") {
-				new_solid = new Rectangle(new Point(0, 0), Integer.parseInt(m_rectWField.getText()), Integer.parseInt(m_rectHField.getText()),
+				new_solid = new Rectangle(new Point(0, 0), Double.parseDouble(m_rectWField.getText()), Double.parseDouble(m_rectHField.getText()),
+				0.0);
+			} else if (m_comboBox.getSelectedItem().toString() == "Line") {
+				new_solid = new Line(new Point(0, 0), Double.parseDouble(m_lineLField.getText()),
 				0.0);
 			} else {
 				return;

@@ -1,15 +1,15 @@
 import java.awt.*;
+import java.util.ArrayList;
 
 abstract public class Solid {
     public int m_nbSolids, m_nbJoints;
-    public double m_width, m_height, m_angleToGround;
-    public Point m_origin;
+    public ArrayList<Point> m_points;
     public CoordSystem m_coordSystem;
 
     //Constructor
     public Solid (Point origin, double angleToGround) {
-        m_origin = origin;
         m_coordSystem = new CoordSystem (origin, angleToGround);
+        m_points = new ArrayList<Point>();
     }
 
     abstract public void draw(Graphics g);
@@ -21,7 +21,7 @@ abstract public class Solid {
 
     //Returns the angle with respect to another Solid
     public double rotation ( Solid otherSolid) {
-        double retRotation = (double) (otherSolid.m_angleToGround - m_angleToGround);
+        double retRotation = (double) (otherSolid.m_coordSystem.m_angleToGround - m_coordSystem.m_angleToGround);
         return retRotation;
     }
 }
