@@ -11,6 +11,6 @@ public class Revolute extends Joint {
     }
 
     public void draw(Graphics g) {
-        g.drawOval(m_pContact.m_x, m_pContact.m_y, 10, 10);
+        g.drawOval(m_pContact.m_x-5, m_pContact.m_y-5, 10, 10);
     }
 }

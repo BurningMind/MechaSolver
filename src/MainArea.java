@@ -8,7 +8,8 @@ public class MainArea extends JPanel implements MouseInputListener {
 		NONE,
 		REVOLUTE,
 		LINE1,
-		LINE2
+		LINE2,
+		CLEAR
 	}
 
 	public MainWindow m_mainWindow;
@@ -37,14 +38,15 @@ public class MainArea extends JPanel implements MouseInputListener {
 			for (Joint j : m_mainWindow.m_joints) {
 				int x = e.getX() - j.m_pContact.m_x;
 				int y = e.getY() - j.m_pContact.m_y;
-				if (Math.sqrt(x*x + y*y) <= 10) {
+				if (Math.sqrt(x*x + y*y) <= 50) {
 					joint = j;
 					break;
 				}
 			}
 
-			if (joint == null)
+			if (joint == null) {
 				return;
+			}
 
 			m_tempJoint = joint;
 			m_mode = Mode.LINE2;
@@ -66,6 +68,10 @@ public class MainArea extends JPanel implements MouseInputListener {
 			repaint();
 
 			m_mode = Mode.NONE;
+		} else if (m_mode == Mode.CLEAR) {
+			m_mainWindow.m_solids.clear();
+			m_mainWindow.m_joints.clear();
+			repaint();
 		}
 	}
 

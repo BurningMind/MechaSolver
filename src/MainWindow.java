@@ -6,6 +6,7 @@ import java.util.HashSet;
 public class MainWindow extends JFrame implements ActionListener {
 	JButton m_addRevoluteButton;
 	JButton m_addLineButton;
+	JButton m_clear;
 	MainArea m_mainArea;
 
 	public HashSet<Solid> m_solids;
@@ -14,6 +15,7 @@ public class MainWindow extends JFrame implements ActionListener {
 	//Constructor
 	public MainWindow() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setTitle("J'aime la baguette");
 
 		Container pane = getContentPane();
 
@@ -28,6 +30,10 @@ public class MainWindow extends JFrame implements ActionListener {
 		m_addLineButton.addActionListener(this);
 		toolBar.add(m_addLineButton);
 
+		m_clear = new JButton ("Clear");
+		m_clear.addActionListener(this);
+		toolBar.add(m_clear);
+
 		m_mainArea = new MainArea(this);
 		pane.add(m_mainArea, BorderLayout.CENTER);
 
@@ -35,6 +41,7 @@ public class MainWindow extends JFrame implements ActionListener {
 		m_joints = new HashSet<Joint>();
 
 		pack();
+		setSize(1200,700);
 		setVisible(true);
 	}
 
@@ -43,6 +50,8 @@ public class MainWindow extends JFrame implements ActionListener {
 			m_mainArea.m_mode = MainArea.Mode.REVOLUTE;
 		} else if (e.getSource() == m_addLineButton) {
 			m_mainArea.m_mode = MainArea.Mode.LINE1;
+		} else if (e.getSource() == m_clear) {
+			m_mainArea.m_mode = MainArea.Mode.CLEAR;
 		}
 	}
 }
