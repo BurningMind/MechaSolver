@@ -51,7 +51,25 @@ public class MainArea extends JPanel implements MouseInputListener {
 			m_tempJoint = joint;
 			m_mode = Mode.LINE2;
 		} else if (m_mode == Mode.LINE2) {
-			Line new_line = new Line(m_tempJoint.m_pContact, new Point(e.getX(), e.getY()));
+			Joint joint = null;
+			for (Joint j : m_mainWindow.m_joints) {
+				int x = e.getX() - j.m_pContact.m_x;
+				int y = e.getY() - j.m_pContact.m_y;
+				if (Math.sqrt(x*x + y*y) <= 50) {
+					joint = j;
+					break;
+				}
+			}
+
+			Line new_line;
+
+			if (joint != null) {
+				new_line = new Line(m_tempJoint.m_pContact, joint.m_pContact);
+				joint.m_s2 = new_line;
+			} else {
+				new_line = new Line(m_tempJoint.m_pContact, new Point(e.getX(), e.getY()));
+			}
+
 			m_mainWindow.m_solids.add(new_line);
 
 			m_tempJoint.m_s2 = new_line;

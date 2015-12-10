@@ -22,6 +22,12 @@ public class Line extends Solid {
 
 		double new_l = (op_x * u_x + op_y * u_y) / Math.sqrt(u_x * u_x + u_y * u_y);
 
+		if (new_l < 0) {
+			new_l = 0;
+		} else if (new_l > Math.sqrt(u_x * u_x + u_y * u_y)) {
+			new_l = Math.sqrt(u_x * u_x + u_y * u_y);
+		}
+
 		int new_x = m_coordSystem.m_origin.m_x + (int)((double)u_x * (double)new_l / (double)(Math.sqrt(u_x * u_x + u_y * u_y)));
 
 		int new_y = m_coordSystem.m_origin.m_y + (int)((double)u_y * (double)new_l / (double)(Math.sqrt(u_x * u_x + u_y * u_y)));
