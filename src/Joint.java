@@ -3,7 +3,7 @@ import java.awt.*;
 abstract public class Joint {
 
     public Solid m_s1, m_s2;
-    public boolean m_transX, m_transY, m_rotZ;
+    public Parameter m_transX, m_transY, m_rotZ;
     public Point m_pS1, m_pS2, m_pContact;
 
     //Constructor

@@ -12,6 +12,7 @@ public class MainWindow extends JFrame implements ActionListener {
 
 	public HashSet<Solid> m_solids;
 	public HashSet<Joint> m_joints;
+	public Ground m_ground;
 
 	//Constructor
 	public MainWindow() {
@@ -44,6 +45,7 @@ public class MainWindow extends JFrame implements ActionListener {
 
 		m_solids = new HashSet<Solid>();
 		m_joints = new HashSet<Joint>();
+		m_ground = new Ground();
 
 		pack();
 		setSize(1200,700);

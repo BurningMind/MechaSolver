@@ -3,11 +3,9 @@ import java.awt.*;
 public class Revolute extends Joint {
 
     //Constructor
-    public Revolute (Solid s1, Solid s2, Point pS1, Point pS2, Point pContact) {
+    public Revolute (Solid s1, Solid s2, Point pS1, Point pS2, Point pContact, String name, double angle) {
         super(s1, s2, pS1, pS2, pContact);
-        m_rotZ = true;
-        m_transX = false;
-        m_transY = false;
+        m_rotZ = new Parameter(name, angle);
     }
 
     public void draw(Graphics g) {
