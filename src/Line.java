@@ -10,8 +10,13 @@ public class Line extends Solid {
 	}
 
 	public void draw(Graphics g) {
+		double rot = 0.0;
+		if (m_coordSystem.m_rotZ != null) {
+			rot = m_coordSystem.m_rotZ.m_value;
+		}
+
 		Point a = getAbsoluteOrigin();
-		g.drawLine((int)a.m_x, (int)a.m_y, (int)(a.m_x + m_length * Math.cos(m_coordSystem.m_rotZ.m_value)), (int)(a.m_y + m_length * Math.sin(m_coordSystem.m_rotZ.m_value)));
+		g.drawLine((int)a.m_x, (int)a.m_y, (int)(a.m_x + m_length * Math.cos(rot)), (int)(a.m_y + m_length * Math.sin(rot)));
 	}
 
 	public Point getAbsoluteOrigin() {

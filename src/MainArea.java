@@ -61,8 +61,15 @@ public class MainArea extends JPanel implements MouseInputListener {
 				}
 			}
 
-			int d_x = e.getX() - m_tempJoint.m_pContact.m_x;
-			int d_y = e.getY() - m_tempJoint.m_pContact.m_y	;
+			Point p;
+			if (joint == null) {
+				p = new Point(e.getX(), e.getY());
+			} else {
+				p = joint.m_pContact;
+			}
+
+			int d_x = p.m_x - m_tempJoint.m_pContact.m_x;
+			int d_y = p.m_y - m_tempJoint.m_pContact.m_y	;
 			Line new_line = new Line(m_tempJoint, Math.sqrt(d_x * d_x + d_y * d_y));
 
 			if (joint != null) {
@@ -114,8 +121,8 @@ public class MainArea extends JPanel implements MouseInputListener {
 				rot = solid.m_coordSystem.m_rotZ.m_value;
 			}
 
-			point.m_x = (int)(point.m_x * Math.cos(rot)) - (int)(point.m_y * Math.sin(rot));
-			point.m_y = (int)(point.m_x * Math.sin(rot)) + (int)(point.m_y * Math.cos(rot));
+			point.m_x = (int)(point.m_x * Math.cos(rot) - point.m_y * Math.sin(rot));
+			point.m_y = (int)(point.m_x * Math.sin(rot) + point.m_y * Math.cos(rot));
 
 			Joint joint;
 			if (m_mode == Mode.REVOLUTE) {
