@@ -8,8 +8,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 		NONE,
 		REVOLUTE,
 		LINE1,
-		LINE2,
-		CLEAR
+		LINE2
 	}
 
 	public MainWindow m_mainWindow;
@@ -84,10 +83,6 @@ public class MainArea extends JPanel implements MouseInputListener {
 			repaint();
 
 			m_mode = Mode.NONE;
-		} else if (m_mode == Mode.CLEAR) {
-			m_mainWindow.m_solids.clear();
-			m_mainWindow.m_joints.clear();
-			repaint();
 		}
 	}
 

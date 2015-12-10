@@ -51,7 +51,9 @@ public class MainWindow extends JFrame implements ActionListener {
 		} else if (e.getSource() == m_addLineButton) {
 			m_mainArea.m_mode = MainArea.Mode.LINE1;
 		} else if (e.getSource() == m_clear) {
-			m_mainArea.m_mode = MainArea.Mode.CLEAR;
+			m_solids.clear();
+			m_joints.clear();
+			m_mainArea.repaint();
 		}
 	}
 }
