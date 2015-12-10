@@ -7,9 +7,9 @@ public class MainArea extends JPanel implements MouseInputListener {
 	public enum Mode {
 		NONE,
 		REVOLUTE,
+		PRISMATIC,
 		LINE1,
-		LINE2,
-		CLEAR
+		LINE2
 	}
 
 	public MainWindow m_mainWindow;
@@ -77,7 +77,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 			repaint();
 
 			m_mode = Mode.NONE;
-		} else if (m_mode == Mode.REVOLUTE) {
+		} else if (m_mode == Mode.REVOLUTE || m_mode == Mode.PRISMATIC) {
 			Solid solid = null;
 			Point point = null;
 			for (Solid s : m_mainWindow.m_solids) {
@@ -85,7 +85,6 @@ public class MainArea extends JPanel implements MouseInputListener {
 				if (p != null) {
 					solid = s;
 					point = p;
-					m_mainWindow.setTitle("Snapped!");
 					break;
 				}
 			}
@@ -97,15 +96,15 @@ public class MainArea extends JPanel implements MouseInputListener {
 				point = new Point(e.getX(), e.getY());
 			}
 
-			m_mainWindow.m_joints.add(new Revolute(solid, null, point, new Point(0, 0), point));
+			if (m_mode == Mode.REVOLUTE) {
+				m_mainWindow.m_joints.add(new Revolute(solid, null, point, new Point(0, 0), point));
+			} else if (m_mode == Mode.PRISMATIC) {
+				m_mainWindow.m_joints.add(new Prismatic(solid, null, point, new Point(0, 0), point));
+			}
 
 			repaint();
 
 			m_mode = Mode.NONE;
-		} else if (m_mode == Mode.CLEAR) {
-			m_mainWindow.m_solids.clear();
-			m_mainWindow.m_joints.clear();
-			repaint();
 		}
 	}
 

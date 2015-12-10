@@ -5,6 +5,7 @@ import java.util.HashSet;
 
 public class MainWindow extends JFrame implements ActionListener {
 	JButton m_addRevoluteButton;
+	JButton m_addPrismaticButton;
 	JButton m_addLineButton;
 	JButton m_clear;
 	MainArea m_mainArea;
@@ -25,6 +26,10 @@ public class MainWindow extends JFrame implements ActionListener {
 		m_addRevoluteButton = new JButton("Add Revolute");
 		m_addRevoluteButton.addActionListener(this);
 		toolBar.add(m_addRevoluteButton);
+
+		m_addPrismaticButton = new JButton("Add Prismatic");
+		m_addPrismaticButton.addActionListener(this);
+		toolBar.add(m_addPrismaticButton);
 
 		m_addLineButton = new JButton("Add Line");
 		m_addLineButton.addActionListener(this);
@@ -48,10 +53,14 @@ public class MainWindow extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == m_addRevoluteButton) {
 			m_mainArea.m_mode = MainArea.Mode.REVOLUTE;
+		} else if (e.getSource() == m_addPrismaticButton) {
+			m_mainArea.m_mode = MainArea.Mode.PRISMATIC;
 		} else if (e.getSource() == m_addLineButton) {
 			m_mainArea.m_mode = MainArea.Mode.LINE1;
 		} else if (e.getSource() == m_clear) {
-			m_mainArea.m_mode = MainArea.Mode.CLEAR;
+			m_solids.clear();
+			m_joints.clear();
+			m_mainArea.repaint();
 		}
 	}
 }
