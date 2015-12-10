@@ -13,4 +13,8 @@ public class Rectangle extends Solid {
 	public void draw(Graphics g) {
 		g.drawRect((int)m_coordSystem.m_origin.m_x, (int)m_coordSystem.m_origin.m_y, (int)m_width, (int)m_height);
 	}
+
+    public Point getClosePoint(Point p) {
+		return null;
+	}
 }

@@ -2,6 +2,7 @@ import java.awt.*;
 import java.util.ArrayList;
 
 abstract public class Solid {
+    public boolean m_isGround;
     public int m_nbSolids, m_nbJoints;
     public ArrayList<Point> m_points;
     public CoordSystem m_coordSystem;
@@ -13,6 +14,8 @@ abstract public class Solid {
     }
 
     abstract public void draw(Graphics g);
+
+    abstract public Point getClosePoint(Point p);
 
     //Takes another Solid and returns whether the two solids are fixed
     public boolean isFixed (Solid otherSolid) {
