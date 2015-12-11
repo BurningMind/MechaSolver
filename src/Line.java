@@ -1,24 +1,38 @@
 import java.awt.*;
 
 public class Line extends Solid {
-	public Point m_p2;
+	public double m_length;
 
 	//Constructor
-	public Line(Point origin, Point p2) {
-		super (origin, Math.atan2(p2.m_y, p2.m_x));
-		m_p2 = p2;
+	public Line(Joint joint, double length) {
+		super (joint);
+		m_length = length;
 	}
 
 	public void draw(Graphics g) {
-		g.drawLine((int)m_coordSystem.m_origin.m_x, (int)m_coordSystem.m_origin.m_y, (int)(m_p2.m_x), (int)(m_p2.m_y));
+		double rot = 0.0;
+		if (m_coordSystem.m_rotZ != null) {
+			rot = m_coordSystem.m_rotZ.m_value;
+		}
+
+		Point a = getAbsoluteOrigin();
+		g.drawLine((int)a.m_x, (int)a.m_y, (int)(a.m_x + m_length * Math.cos(rot)), (int)(a.m_y + m_length * Math.sin(rot)));
+	}
+
+	public Point getAbsoluteOrigin() {
+		int x = m_coordSystem.m_origin.m_x + m_coordSystem.m_reference.getAbsoluteOrigin().m_x;
+		int y = m_coordSystem.m_origin.m_y + m_coordSystem.m_reference.getAbsoluteOrigin().m_y;
+
+		return new Point(x, y);
 	}
 
 	public Point getClosePoint(Point p) {
-		int op_x = p.m_x - m_coordSystem.m_origin.m_x;
-		int op_y = p.m_y - m_coordSystem.m_origin.m_y;
+		Point a = getAbsoluteOrigin();
+		int op_x = p.m_x - a.m_x;
+		int op_y = p.m_y - a.m_y;
 
-		int u_x = m_p2.m_x - m_coordSystem.m_origin.m_x;
-		int u_y = m_p2.m_y - m_coordSystem.m_origin.m_y;
+		int u_x = (int)(a.m_x + m_length * Math.cos(m_coordSystem.m_rotZ.m_value)) - m_coordSystem.m_origin.m_x;
+		int u_y = (int)(a.m_y + m_length * Math.sin(m_coordSystem.m_rotZ.m_value)) - m_coordSystem.m_origin.m_y;
 
 		double new_l = (op_x * u_x + op_y * u_y) / Math.sqrt(u_x * u_x + u_y * u_y);
 
@@ -35,7 +49,7 @@ public class Line extends Solid {
 		double dist = Math.sqrt((p.m_x - new_x) * (p.m_x - new_x) + (p.m_y - new_y) * (p.m_y - new_y));
 
 		if (dist <= 10) {
-			return new Point(new_x, new_y);
+			return new Point((int)new_l, 0);
 		} else {
 			return null;
 		}

@@ -1,20 +1,15 @@
 public class CoordSystem {
 
-    public Vector m_vecX, m_vecY, m_vecZ;
+    public Parameter m_transX, m_transY, m_rotZ;
     public Point m_origin;
-    public double m_angleToGround;
+    public Solid m_reference;
 
     //Constructor
-    public CoordSystem (Point origin, double angleToGround) {
-        m_vecX = new Vector ( origin, angleToGround);
-        m_vecY = new Vector ( origin, angleToGround + Math.PI/2.0);
+    public CoordSystem (Solid reference, Point origin, Parameter transX, Parameter transY, Parameter rotZ) {
+        m_reference = reference;
         m_origin = origin;
-        m_angleToGround = m_vecX.m_angleToGround;
-    }
-
-    //Returns the angle with respect to another CoordSystem
-    public double rotation ( CoordSystem otherCoordSystem) {
-        double retRotation = (double) (otherCoordSystem.m_angleToGround - m_angleToGround);
-        return retRotation;
+        m_transX = transX;
+        m_transY = transY;
+        m_rotZ = rotZ;
     }
 }

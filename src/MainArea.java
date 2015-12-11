@@ -61,13 +61,32 @@ public class MainArea extends JPanel implements MouseInputListener {
 				}
 			}
 
-			Line new_line;
+			Point p;
+			if (joint == null) {
+				p = new Point(e.getX(), e.getY());
+			} else {
+				p = joint.m_pContact;
+			}
+
+			int d_x = p.m_x - m_tempJoint.m_pContact.m_x;
+			int d_y = p.m_y - m_tempJoint.m_pContact.m_y	;
+			Line new_line = new Line(m_tempJoint, Math.sqrt(d_x * d_x + d_y * d_y));
 
 			if (joint != null) {
-				new_line = new Line(m_tempJoint.m_pContact, joint.m_pContact);
+				new_line.m_joints.add(joint);
 				joint.m_s2 = new_line;
-			} else {
-				new_line = new Line(m_tempJoint.m_pContact, new Point(e.getX(), e.getY()));
+
+				new_line.m_coordSystem.m_transX = joint.m_transX;
+				new_line.m_coordSystem.m_transY = joint.m_transY;
+				new_line.m_coordSystem.m_rotZ = joint.m_rotZ;
+
+				m_tempJoint.m_transX = joint.m_transX;
+				m_tempJoint.m_transY = joint.m_transY;
+				m_tempJoint.m_rotZ = joint.m_rotZ;
+			}
+
+			if (new_line.m_coordSystem.m_rotZ != null) {
+				new_line.m_coordSystem.m_rotZ.m_value = Math.atan2(d_y, d_x);
 			}
 
 			m_mainWindow.m_solids.add(new_line);
@@ -90,17 +109,32 @@ public class MainArea extends JPanel implements MouseInputListener {
 			}
 
 			if (solid == null) {
-				solid = new Ground();
+				solid = m_mainWindow.m_ground;
 			}
+
  			if (point == null) {
 				point = new Point(e.getX(), e.getY());
 			}
 
-			if (m_mode == Mode.REVOLUTE) {
-				m_mainWindow.m_joints.add(new Revolute(solid, null, point, new Point(0, 0), point));
-			} else if (m_mode == Mode.PRISMATIC) {
-				m_mainWindow.m_joints.add(new Prismatic(solid, null, point, new Point(0, 0), point));
+			double rot = 0.0;
+			if (solid.m_coordSystem.m_rotZ != null) {
+				rot = solid.m_coordSystem.m_rotZ.m_value;
 			}
+
+			point.m_x = (int)(point.m_x * Math.cos(rot) - point.m_y * Math.sin(rot));
+			point.m_y = (int)(point.m_x * Math.sin(rot) + point.m_y * Math.cos(rot));
+
+			Joint joint;
+			if (m_mode == Mode.REVOLUTE) {
+				joint = new Revolute(solid, null, point, new Point(0, 0), new Point(solid.m_coordSystem.m_origin.m_x + point.m_x, solid.m_coordSystem.m_origin.m_y + point.m_y), "rev", 0.0);
+			} else if (m_mode == Mode.PRISMATIC) {
+				joint = new Prismatic(solid, null, point, new Point(0, 0), new Point(solid.m_coordSystem.m_origin.m_x + point.m_x, solid.m_coordSystem.m_origin.m_y + point.m_y), "pris", 0.0);
+			} else {
+				return;
+			}
+
+			m_mainWindow.m_joints.add(joint);
+			solid.m_joints.add(joint);
 
 			repaint();
 
