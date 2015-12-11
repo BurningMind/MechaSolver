@@ -16,10 +16,12 @@ public class MainArea extends JPanel implements MouseInputListener {
 	public Mode m_mode = Mode.NONE;
 
 	private Joint m_tempJoint;
+	private Point m_tempLine;
 
 	public MainArea(MainWindow mainWindow) {
 		m_mainWindow = mainWindow;
 		addMouseListener(this);
+		addMouseMotionListener(this);
 	}
 
 	public void paint(Graphics g) {
@@ -29,6 +31,9 @@ public class MainArea extends JPanel implements MouseInputListener {
 		}
 		for (Joint j : m_mainWindow.m_joints) {
 			j.draw(g);
+		}
+		if (m_tempLine!=null && m_mode == Mode.LINE2) {
+			g.drawLine(m_tempJoint.m_pContact.m_x, m_tempJoint.m_pContact.m_y, m_tempLine.m_x, m_tempLine.m_y);
 		}
 	}
 
@@ -69,7 +74,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 			}
 
 			int d_x = p.m_x - m_tempJoint.m_pContact.m_x;
-			int d_y = p.m_y - m_tempJoint.m_pContact.m_y	;
+			int d_y = p.m_y - m_tempJoint.m_pContact.m_y;
 			Line new_line = new Line(m_tempJoint, Math.sqrt(d_x * d_x + d_y * d_y));
 
 			if (joint != null) {
@@ -146,6 +151,12 @@ public class MainArea extends JPanel implements MouseInputListener {
 	public void mouseExited(MouseEvent e) {}
 	public void mousePressed(MouseEvent e) {}
 	public void mouseReleased(MouseEvent e) {}
-	public void mouseMoved(MouseEvent e) {}
+	public void mouseMoved(MouseEvent e) {
+		if (m_mode == Mode.LINE2) {
+			m_tempLine = new Point (e.getX(), e.getY());
+
+			repaint();
+		}
+	}
 	public void mouseDragged(MouseEvent e) {}
 }
