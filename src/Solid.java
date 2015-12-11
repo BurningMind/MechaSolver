@@ -22,7 +22,37 @@ abstract public class Solid {
     abstract public void draw(Graphics g);
 
     abstract public Point getClosePoint(Point p);
-    abstract public Point getAbsoluteOrigin();
+
+	public Point getAbsoluteOrigin() {
+		int x = m_coordSystem.m_origin.m_x + m_coordSystem.m_reference.getAbsoluteOrigin().m_x;
+		int y = m_coordSystem.m_origin.m_y + m_coordSystem.m_reference.getAbsoluteOrigin().m_y;
+
+		return new Point(x, y);
+	}
+
+    public Point getAbsolutePosition() {
+		int x = getAbsoluteOrigin().m_x;
+        if (m_coordSystem.m_transX != null) {
+            x += m_coordSystem.m_transX.m_value;
+        }
+        int y = getAbsoluteOrigin().m_y;
+        if (m_coordSystem.m_transY != null) {
+            y += m_coordSystem.m_transY.m_value;
+        }
+
+		return new Point(x, y);
+	}
+
+    public double getAbsoluteRotation() {
+	    double rot = 0.0;
+        if (m_coordSystem.m_rotZ != null) {
+            rot = m_coordSystem.m_rotZ.m_value;
+        }
+
+        rot += m_coordSystem.m_reference.getAbsoluteRotation();
+
+		return rot;
+	}
 
     //Takes another Solid and returns whether the two solids are fixed
     public boolean isFixed (Solid otherSolid) {

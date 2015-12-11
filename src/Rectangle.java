@@ -14,10 +14,6 @@ public class Rectangle extends Solid {
 		g.drawRect((int)m_coordSystem.m_origin.m_x, (int)m_coordSystem.m_origin.m_y, (int)m_width, (int)m_height);
 	}
 
-    public Point getAbsoluteOrigin() {
-        return new Point(0, 0);
-    }
-
     public Point getClosePoint(Point p) {
 		return null;
 	}

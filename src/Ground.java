@@ -10,8 +10,19 @@ public class Ground extends Solid {
 		return null;
 	}
 
+	@Override
 	public Point getAbsoluteOrigin() {
 		return new Point(0, 0);
+	}
+
+	@Override
+	public Point getAbsolutePosition() {
+		return new Point(0, 0);
+	}
+
+	@Override
+	public double getAbsoluteRotation() {
+		return 0.0;
 	}
 
 	public void draw(Graphics g) {
