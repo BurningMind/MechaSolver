@@ -55,8 +55,11 @@ public class MainArea extends JPanel implements MouseInputListener {
 
 			m_tempJoint = joint;
 			m_mode = Mode.LINE2;
+
 		} else if (m_mode == Mode.LINE2) {
+
 			Joint joint = null;
+
 			for (Joint j : m_mainWindow.m_joints) {
 				int x = e.getX() - j.m_pContact.m_x;
 				int y = e.getY() - j.m_pContact.m_y;
@@ -67,6 +70,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 			}
 
 			Point p;
+
 			if (joint == null) {
 				p = new Point(e.getX(), e.getY());
 			} else {
@@ -101,9 +105,12 @@ public class MainArea extends JPanel implements MouseInputListener {
 			repaint();
 
 			m_mode = Mode.LINE1;
+
 		} else if (m_mode == Mode.REVOLUTE || m_mode == Mode.PRISMATIC) {
+
 			Solid solid = null;
 			Point point = null;
+
 			for (Solid s : m_mainWindow.m_solids) {
 				Point p = s.getClosePoint(new Point(e.getX(), e.getY()));
 				if (p != null) {
@@ -117,7 +124,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 				solid = m_mainWindow.m_ground;
 			}
 
- 			if (point == null) {
+			if (point == null) {
 				point = new Point(e.getX(), e.getY());
 			}
 
@@ -147,16 +154,31 @@ public class MainArea extends JPanel implements MouseInputListener {
 		}
 	}
 
+	public void mouseMoved(MouseEvent e) {
+		Joint joint = null;
+		for (Joint j : m_mainWindow.m_joints) {
+			int x = e.getX() - j.m_pContact.m_x;
+			int y = e.getY() - j.m_pContact.m_y;
+			if (Math.sqrt(x*x + y*y) <= 50) {
+				joint = j;
+				break;
+			}
+		}
+
+		if (m_mode == Mode.LINE2) {
+			if (joint!=null) {
+				m_tempLine = new Point (joint.m_pContact.m_x, joint.m_pContact.m_y);
+				repaint();
+			} else {
+				m_tempLine = new Point (e.getX(), e.getY());
+				repaint();
+			}
+		}
+	}
+
 	public void mouseEntered(MouseEvent e) {}
 	public void mouseExited(MouseEvent e) {}
 	public void mousePressed(MouseEvent e) {}
 	public void mouseReleased(MouseEvent e) {}
-	public void mouseMoved(MouseEvent e) {
-		if (m_mode == Mode.LINE2) {
-			m_tempLine = new Point (e.getX(), e.getY());
-
-			repaint();
-		}
-	}
 	public void mouseDragged(MouseEvent e) {}
 }
