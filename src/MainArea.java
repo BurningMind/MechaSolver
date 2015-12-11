@@ -16,10 +16,12 @@ public class MainArea extends JPanel implements MouseInputListener {
 	public Mode m_mode = Mode.NONE;
 
 	private Joint m_tempJoint;
+	private Point m_tempLine;
 
 	public MainArea(MainWindow mainWindow) {
 		m_mainWindow = mainWindow;
 		addMouseListener(this);
+		addMouseMotionListener(this);
 	}
 
 	public void paint(Graphics g) {
@@ -29,6 +31,9 @@ public class MainArea extends JPanel implements MouseInputListener {
 		}
 		for (Joint j : m_mainWindow.m_joints) {
 			j.draw(g);
+		}
+		if (m_tempLine!=null && m_mode == Mode.LINE2) {
+			g.drawLine(m_tempJoint.m_pContact.m_x, m_tempJoint.m_pContact.m_y, m_tempLine.m_x, m_tempLine.m_y);
 		}
 	}
 
@@ -83,7 +88,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 
 			// We create the line object between the joint and the new point
 			int d_x = p.m_x - m_tempJoint.m_pContact.m_x;
-			int d_y = p.m_y - m_tempJoint.m_pContact.m_y	;
+			int d_y = p.m_y - m_tempJoint.m_pContact.m_y;
 			Line new_line = new Line(m_tempJoint, Math.sqrt(d_x * d_x + d_y * d_y));
 
 
@@ -103,7 +108,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 
 			repaint();
 
-			m_mode = Mode.NONE;
+			m_mode = Mode.LINE1;
 		} else if (m_mode == Mode.REVOLUTE || m_mode == Mode.PRISMATIC) { // We create a joint
 			// We get a point from a nearby solid onto it
 			Solid solid = null;
@@ -121,7 +126,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 			if (solid == null) {
 				solid = m_mainWindow.m_ground;
 			}
- 			if (point == null) {
+			if (point == null) {
 				point = new Point(e.getX(), e.getY());
 			}
 
@@ -146,7 +151,21 @@ public class MainArea extends JPanel implements MouseInputListener {
 
 			repaint();
 
-			m_mode = Mode.NONE;
+			//m_mode = Mode.NONE;
+		}
+	}
+
+	public void mouseMoved(MouseEvent e) {
+		Joint joint = getNearbyJoint(new Point(e.getX(), e.getY()));
+
+		if (m_mode == Mode.LINE2) {
+			if (joint!=null) {
+				m_tempLine = new Point (joint.m_pContact.m_x, joint.m_pContact.m_y);
+				repaint();
+			} else {
+				m_tempLine = new Point (e.getX(), e.getY());
+				repaint();
+			}
 		}
 	}
 
@@ -154,6 +173,5 @@ public class MainArea extends JPanel implements MouseInputListener {
 	public void mouseExited(MouseEvent e) {}
 	public void mousePressed(MouseEvent e) {}
 	public void mouseReleased(MouseEvent e) {}
-	public void mouseMoved(MouseEvent e) {}
 	public void mouseDragged(MouseEvent e) {}
 }
