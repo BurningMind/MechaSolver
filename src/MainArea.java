@@ -76,7 +76,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 
 			repaint();
 
-			m_mode = Mode.NONE;
+			m_mode = Mode.LINE1;
 		} else if (m_mode == Mode.REVOLUTE || m_mode == Mode.PRISMATIC) {
 			Solid solid = null;
 			Point point = null;
@@ -104,7 +104,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 
 			repaint();
 
-			m_mode = Mode.NONE;
+			//m_mode = Mode.NONE;
 		}
 	}
 
