@@ -82,15 +82,6 @@ public class MainArea extends JPanel implements MouseInputListener {
 	public void createSecondLink(Joint joint, Solid solid) {
 		solid.m_joints.add(joint);
 		joint.m_s2 = solid;
-
-		// FIXME: doesn't behave correctly                   |
-		solid.m_coordSystem.m_transX = joint.m_transX; // |
-		solid.m_coordSystem.m_transY = joint.m_transY; // |
-		solid.m_coordSystem.m_rotZ = joint.m_rotZ;     // |
-		                                                  // |
-		m_solidCreationJoint.m_transX = joint.m_transX;            // |
-		m_solidCreationJoint.m_transY = joint.m_transY;            // |
-		m_solidCreationJoint.m_rotZ = joint.m_rotZ;                // v
 	}
 
 	public Pair<Joint, Solid> getInCreationJoint(Point current_point) {
@@ -138,12 +129,15 @@ public class MainArea extends JPanel implements MouseInputListener {
 
 		// If the line is attached to a revolute, then we rotate its parameter to match the line drawn
 		if (new_line.m_coordSystem.m_rotZ != null) {
-			new_line.m_coordSystem.m_rotZ.m_value = Math.atan2(d_y, d_x);
+			new_line.m_coordSystem.m_rotZ.m_value = Math.atan2(d_y, d_x) - m_solidCreationJoint.m_s1.getAbsoluteRotation();
 		} else { // else we normalize its length
 			if (new_line.m_coordSystem.m_transX != null && new_line.m_coordSystem.m_transY == null) {
-				new_line.m_length = d_x;
+				new_line.m_length = Math.abs(d_x);
+				if (d_x < 0) {
+					new_line.m_direction = -1;
+				}
 			} else if (new_line.m_coordSystem.m_transX == null && new_line.m_coordSystem.m_transY != null) {
-				new_line.m_length = d_y;
+
 			}
 		}
 

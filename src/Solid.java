@@ -24,8 +24,11 @@ abstract public class Solid {
     abstract public Point getClosePoint(Point p, double snapping_distance);
 
 	public Point getAbsoluteOrigin() {
-		int x = m_coordSystem.m_origin.m_x + m_coordSystem.m_reference.getAbsoluteOrigin().m_x;
-		int y = m_coordSystem.m_origin.m_y + m_coordSystem.m_reference.getAbsoluteOrigin().m_y;
+        double rot = m_coordSystem.m_reference.getAbsoluteRotation();
+        Point absPos = m_coordSystem.m_reference.getAbsolutePosition();
+
+		int x = absPos.m_x + (int)(m_coordSystem.m_origin.m_x * Math.cos(rot) - m_coordSystem.m_origin.m_y * Math.sin(rot));
+		int y = absPos.m_y + (int)(m_coordSystem.m_origin.m_x * Math.sin(rot) + m_coordSystem.m_origin.m_y * Math.cos(rot));
 
 		return new Point(x, y);
 	}
@@ -46,10 +49,8 @@ abstract public class Solid {
     public double getAbsoluteRotation() {
 	    double rot = 0.0;
         if (m_coordSystem.m_rotZ != null) {
-            rot = m_coordSystem.m_rotZ.m_value;
-        }
-
-        rot += m_coordSystem.m_reference.getAbsoluteRotation();
+            rot = m_coordSystem.m_rotZ.m_value + m_coordSystem.m_reference.getAbsoluteRotation();;
+        } 
 
 		return rot;
 	}
