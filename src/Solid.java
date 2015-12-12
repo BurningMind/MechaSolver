@@ -21,7 +21,7 @@ abstract public class Solid {
 
     abstract public void draw(Graphics g);
 
-    abstract public Point getClosePoint(Point p);
+    abstract public Point getClosePoint(Point p, double snapping_distance);
 
 	public Point getAbsoluteOrigin() {
 		int x = m_coordSystem.m_origin.m_x + m_coordSystem.m_reference.getAbsoluteOrigin().m_x;

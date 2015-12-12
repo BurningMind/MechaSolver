@@ -12,6 +12,8 @@ public class MainArea extends JPanel implements MouseInputListener {
 		LINE2
 	}
 
+	public final double SNAPPING_DISTANCE = 20.0;
+
 	public MainWindow m_mainWindow;
 	public Mode m_mode = Mode.NONE;
 
@@ -52,7 +54,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 			Point absPos = j.getAbsolutePosition();
 			int x = p.m_x - absPos.m_x;
 			int y = p.m_y - absPos.m_y;
-			if (Math.sqrt(x*x + y*y) <= 50) {
+			if (Math.sqrt(x*x + y*y) <= SNAPPING_DISTANCE) {
 				joint = j;
 				break;
 			}
@@ -66,7 +68,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 		Solid solid = null;
 		Point point = null;
 		for (Solid s : m_mainWindow.m_solids) {
-			Point new_p = s.getClosePoint(p);
+			Point new_p = s.getClosePoint(p, SNAPPING_DISTANCE);
 			if (new_p != null) {
 				solid = s;
 				point = new_p;

@@ -6,7 +6,7 @@ public class Ground extends Solid {
 		m_isGround = true;
 	}
 
-	public Point getClosePoint(Point p) {
+	public Point getClosePoint(Point p, double snapping_distance) {
 		return null;
 	}
 

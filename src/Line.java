@@ -15,7 +15,7 @@ public class Line extends Solid {
 		g.drawLine((int)a.m_x, (int)a.m_y, (int)(a.m_x + m_length * Math.cos(rot)), (int)(a.m_y + m_length * Math.sin(rot)));
 	}
 
-	public Point getClosePoint(Point p) {
+	public Point getClosePoint(Point p, double snapping_distance) {
 		Point a = getAbsolutePosition();
 		int op_x = p.m_x - a.m_x;
 		int op_y = p.m_y - a.m_y;
@@ -37,7 +37,7 @@ public class Line extends Solid {
 
 		double dist = Math.sqrt((p.m_x - new_x) * (p.m_x - new_x) + (p.m_y - new_y) * (p.m_y - new_y));
 
-		if (dist <= 10) {
+		if (dist <= snapping_distance) {
 			return new Point((int)new_l, 0);
 		} else {
 			return null;
