@@ -33,7 +33,8 @@ public class MainArea extends JPanel implements MouseInputListener {
 			j.draw(g);
 		}
 		if (m_tempLine!=null && m_mode == Mode.LINE2) {
-			g.drawLine(m_tempJoint.m_pContact.m_x, m_tempJoint.m_pContact.m_y, m_tempLine.m_x, m_tempLine.m_y);
+			Point absPos = m_tempJoint.getAbsolutePosition();
+			g.drawLine(absPos.m_x, absPos.m_y, m_tempLine.m_x, m_tempLine.m_y);
 		}
 	}
 
@@ -41,8 +42,9 @@ public class MainArea extends JPanel implements MouseInputListener {
 		// We check distances until we find a joint within our radius, else we return a null
 		Joint joint = null;
 		for (Joint j : m_mainWindow.m_joints) {
-			int x = p.m_x - j.m_pContact.m_x;
-			int y = p.m_y - j.m_pContact.m_y;
+			Point absPos = j.getAbsolutePosition();
+			int x = p.m_x - absPos.m_x;
+			int y = p.m_y - absPos.m_y;
 			if (Math.sqrt(x*x + y*y) <= 50) {
 				joint = j;
 				break;
@@ -83,12 +85,13 @@ public class MainArea extends JPanel implements MouseInputListener {
 			if (joint == null) { // If we don't snap, create the solid freely
 				p = new Point(e.getX(), e.getY());
 			} else { // If we snap, set the second point to the joint
-				p = joint.m_pContact;
+				p = joint.getAbsolutePosition();
 			}
 
 			// We create the line object between the joint and the new point
-			int d_x = p.m_x - m_tempJoint.m_pContact.m_x;
-			int d_y = p.m_y - m_tempJoint.m_pContact.m_y;
+			Point absPos = m_tempJoint.getAbsolutePosition();
+			int d_x = p.m_x - absPos.m_x;
+			int d_y = p.m_y - absPos.m_y;
 			Line new_line = new Line(m_tempJoint, Math.sqrt(d_x * d_x + d_y * d_y));
 
 
@@ -130,18 +133,12 @@ public class MainArea extends JPanel implements MouseInputListener {
 				point = new Point(e.getX(), e.getY());
 			}
 
-			// If we had a rotated solid, we rotate the point with respect to it for it to match the solid
-			double rot = solid.getAbsoluteRotation();
-			point.m_x = (int)(point.m_x * Math.cos(rot) - point.m_y * Math.sin(rot));
-			point.m_y = (int)(point.m_x * Math.sin(rot) + point.m_y * Math.cos(rot));
-
 			// We create the joint
 			Joint joint;
-			Point absPos = solid.getAbsolutePosition();
 			if (m_mode == Mode.REVOLUTE) {
-				joint = new Revolute(solid, null, point, new Point(0, 0), new Point(absPos.m_x + point.m_x, absPos.m_y + point.m_y), "rev", 0.0);
+				joint = new Revolute(solid, null, point, new Point(0, 0), "rev", 0.0);
 			} else if (m_mode == Mode.PRISMATIC) {
-				joint = new Prismatic(solid, null, point, new Point(0, 0), new Point(absPos.m_x + point.m_x, absPos.m_y + point.m_y), "pris", 0.0);
+				joint = new Prismatic(solid, null, point, new Point(0, 0), "pris", 0.0);
 			} else {
 				return;
 			}
@@ -160,7 +157,8 @@ public class MainArea extends JPanel implements MouseInputListener {
 
 		if (m_mode == Mode.LINE2) {
 			if (joint!=null) {
-				m_tempLine = new Point (joint.m_pContact.m_x, joint.m_pContact.m_y);
+				Point absPos = joint.getAbsolutePosition();
+				m_tempLine = new Point (absPos.m_x, absPos.m_y);
 				repaint();
 			} else {
 				m_tempLine = new Point (e.getX(), e.getY());
