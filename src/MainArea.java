@@ -61,21 +61,20 @@ public class MainArea extends JPanel implements MouseInputListener {
 		return joint;
 	}
 
-	public void getNearbySolidAndPoint(Point p, Solid _solid, Point _point) {
+	public Pair<Solid, Point> getNearbySolidAndPoint(Point p) {
 		// We get a point from a nearby solid onto it
 		Solid solid = null;
 		Point point = null;
 		for (Solid s : m_mainWindow.m_solids) {
 			Point new_p = s.getClosePoint(p);
-			if (p != null) {
+			if (new_p != null) {
 				solid = s;
 				point = new_p;
 				break;
 			}
 		}
 
-		_solid = solid;
-		_point = point;
+		return new Pair<Solid, Point>(solid, point);
 	}
 
 	public void createSecondLink(Joint joint, Solid solid) {
@@ -92,6 +91,63 @@ public class MainArea extends JPanel implements MouseInputListener {
 		m_solidCreationJoint.m_rotZ = joint.m_rotZ;                // v
 	}
 
+	public Pair<Joint, Solid> getInCreationJoint(Point current_point) {
+		// We get a point from a nearby solid onto it
+		Pair<Solid, Point> pair = getNearbySolidAndPoint(current_point);
+		Solid solid = pair.a;
+		Point point = pair.b;
+
+		// Otherwise we default to the ground
+		if (solid == null) {
+			solid = m_mainWindow.m_ground;
+		}
+		if (point == null) {
+			point = current_point;
+		}
+
+		// We create the joint
+		Joint joint;
+		if (m_mode == Mode.REVOLUTE) {
+			joint = new Revolute(solid, null, point, new Point(0, 0), "rev", 0.0);
+		} else if (m_mode == Mode.PRISMATIC) {
+			joint = new Prismatic(solid, null, point, new Point(0, 0), "pris", 0.0);
+		} else {
+			return null;
+		}
+
+		return new Pair<Joint, Solid>(joint, solid);
+	}
+
+	public Pair<Line, Joint> getInCreationLine(Point current_point) {
+		Joint joint = getNearbyJoint(current_point); // Get nearby joint for snapping
+
+		Point p;
+		if (joint == null) { // If we don't snap, create the solid freely
+			p = current_point;
+		} else { // If we snap, set the second point to the joint
+			p = joint.getAbsolutePosition();
+		}
+
+		// We create the line object between the joint and the new point
+		Point absPos = m_solidCreationJoint.getAbsolutePosition();
+		int d_x = p.m_x - absPos.m_x;
+		int d_y = p.m_y - absPos.m_y;
+		Line new_line = new Line(m_solidCreationJoint, Math.sqrt(d_x * d_x + d_y * d_y));
+
+		// If the line is attached to a revolute, then we rotate its parameter to match the line drawn
+		if (new_line.m_coordSystem.m_rotZ != null) {
+			new_line.m_coordSystem.m_rotZ.m_value = Math.atan2(d_y, d_x);
+		} else { // else we normalize its length
+			if (new_line.m_coordSystem.m_transX != null && new_line.m_coordSystem.m_transY == null) {
+				new_line.m_length = d_x;
+			} else if (new_line.m_coordSystem.m_transX == null && new_line.m_coordSystem.m_transY != null) {
+				new_line.m_length = d_y;
+			}
+		}
+
+		return new Pair<Line, Joint>(new_line, joint);
+	}
+
 	public void mouseClicked(MouseEvent e) {
 		if (m_mode == Mode.LINE1) { // First click when creating a line
 			Joint joint = getNearbyJoint(new Point(e.getX(), e.getY())); // Get nearby joint for snapping
@@ -103,29 +159,12 @@ public class MainArea extends JPanel implements MouseInputListener {
 			m_solidCreationJoint = joint; // Store the joint for the second click
 			m_mode = Mode.LINE2;
 		} else if (m_mode == Mode.LINE2) { // Second click when creating a line
-			Joint joint = getNearbyJoint(new Point(e.getX(), e.getY())); // Get nearby joint for snapping
-
-			Point p;
-			if (joint == null) { // If we don't snap, create the solid freely
-				p = new Point(e.getX(), e.getY());
-			} else { // If we snap, set the second point to the joint
-				p = joint.getAbsolutePosition();
-			}
-
-			// We create the line object between the joint and the new point
-			Point absPos = m_solidCreationJoint.getAbsolutePosition();
-			int d_x = p.m_x - absPos.m_x;
-			int d_y = p.m_y - absPos.m_y;
-			Line new_line = new Line(m_solidCreationJoint, Math.sqrt(d_x * d_x + d_y * d_y));
-
+			Pair<Line, Joint> pair = getInCreationLine(new Point(e.getX(), e.getY()));
+			Line new_line = pair.a;
+			Joint joint = pair.b;
 
 			if (joint != null) { // If we snap to a second joint
 				createSecondLink(joint, new_line);
-			}
-
-			// If the line is attached to a revolute, then we rotate its parameter to match the line drawn
-			if (new_line.m_coordSystem.m_rotZ != null) {
-				new_line.m_coordSystem.m_rotZ.m_value = Math.atan2(d_y, d_x);
 			}
 
 			m_mainWindow.m_solids.add(new_line);
@@ -133,94 +172,38 @@ public class MainArea extends JPanel implements MouseInputListener {
 			// We add the line to the initial joint
 			m_solidCreationJoint.m_s2 = new_line;
 
-			repaint();
-
 			m_mode = Mode.LINE1;
 		} else if (m_mode == Mode.REVOLUTE || m_mode == Mode.PRISMATIC) { // We create a joint
-			// We get a point from a nearby solid onto it
-			Solid solid = null;
-			Point point = null;
-			getNearbySolidAndPoint(new Point(e.getX(), e.getY()), solid, point);
+			Pair<Joint, Solid> pair = getInCreationJoint(new Point(e.getX(), e.getY()));
+			Joint joint = pair.a;
+			Solid solid = pair.b;
 
-			// Otherwise we default to the ground
-			if (solid == null) {
-				solid = m_mainWindow.m_ground;
-			}
-			if (point == null) {
-				point = new Point(e.getX(), e.getY());
-			}
-
-			// We create the joint
-			Joint joint;
-			if (m_mode == Mode.REVOLUTE) {
-				joint = new Revolute(solid, null, point, new Point(0, 0), "rev", 0.0);
-			} else if (m_mode == Mode.PRISMATIC) {
-				joint = new Prismatic(solid, null, point, new Point(0, 0), "pris", 0.0);
-			} else {
+			if (joint == null || solid == null) {
 				return;
 			}
 
 			m_mainWindow.m_joints.add(joint);
 			solid.m_joints.add(joint);
-
-			repaint();
-
-			//m_mode = Mode.NONE;
 		}
+
+		repaint();
 	}
 
 	public void mouseMoved(MouseEvent e) {
 		m_tempSolid = null;
 		m_tempJoint = null;
 		if (m_mode == Mode.LINE2) {
-			Point absPos = m_solidCreationJoint.getAbsolutePosition();
+			Line new_line = getInCreationLine(new Point(e.getX(), e.getY())).a;
 
-			Joint joint = getNearbyJoint(new Point(e.getX(), e.getY()));
-			Point p;
-			if (joint!=null) {
-				Point secondAbsPos = joint.getAbsolutePosition();
-				p = new Point (secondAbsPos.m_x, secondAbsPos.m_y);
-			} else {
-				p = new Point (e.getX(), e.getY());
-			}
-
-			int d_x = p.m_x - absPos.m_x;
-			int d_y = p.m_y - absPos.m_y;
-			Line new_line = new Line(m_solidCreationJoint, Math.sqrt(d_x * d_x + d_y * d_y));
-
-			// If the line is attached to a revolute, then we rotate its parameter to match the line drawn
-			if (new_line.m_coordSystem.m_rotZ != null) {
-				new_line.m_coordSystem.m_rotZ.m_value = Math.atan2(d_y, d_x);
-			} else { // else we normalize its length
-				if (new_line.m_coordSystem.m_transX != null && new_line.m_coordSystem.m_transY == null) {
-					new_line.m_length = d_x;
-				} else if (new_line.m_coordSystem.m_transX == null && new_line.m_coordSystem.m_transY != null) {
-					new_line.m_length = d_y;
-				}
+			if (new_line == null) {
+				return;
 			}
 
 			m_tempSolid = new_line;
 		} else if (m_mode == Mode.REVOLUTE || m_mode == Mode.PRISMATIC) {
-			// We get a point from a nearby solid onto it
-			Solid solid = null;
-			Point point = null;
-			getNearbySolidAndPoint(new Point(e.getX(), e.getY()), solid, point);
+			Joint joint = getInCreationJoint(new Point(e.getX(), e.getY())).a;
 
-			// Otherwise we default to the ground
-			if (solid == null) {
-				solid = m_mainWindow.m_ground;
-			}
-			if (point == null) {
-				point = new Point(e.getX(), e.getY());
-			}
-
-			// We create the joint
-			Joint joint;
-			if (m_mode == Mode.REVOLUTE) {
-				joint = new Revolute(solid, null, point, new Point(0, 0), "rev", 0.0);
-			} else if (m_mode == Mode.PRISMATIC) {
-				joint = new Prismatic(solid, null, point, new Point(0, 0), "pris", 0.0);
-			} else {
+			if (joint == null) {
 				return;
 			}
 
