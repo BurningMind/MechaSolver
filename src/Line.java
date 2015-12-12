@@ -20,8 +20,10 @@ public class Line extends Solid {
 		int op_x = p.m_x - a.m_x;
 		int op_y = p.m_y - a.m_y;
 
-		int u_x = (int)(a.m_x + m_length * Math.cos(m_coordSystem.m_rotZ.m_value)) - m_coordSystem.m_origin.m_x;
-		int u_y = (int)(a.m_y + m_length * Math.sin(m_coordSystem.m_rotZ.m_value)) - m_coordSystem.m_origin.m_y;
+		double rot = getAbsoluteRotation();
+
+		int u_x = (int)(a.m_x + m_length * Math.cos(rot)) - m_coordSystem.m_origin.m_x;
+		int u_y = (int)(a.m_y + m_length * Math.sin(rot)) - m_coordSystem.m_origin.m_y;
 
 		double new_l = (op_x * u_x + op_y * u_y) / Math.sqrt(u_x * u_x + u_y * u_y);
 
