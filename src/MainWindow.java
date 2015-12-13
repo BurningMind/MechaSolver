@@ -17,7 +17,7 @@ public class MainWindow extends JFrame implements ActionListener {
 	//Constructor
 	public MainWindow() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setTitle("J'aime la baguette");
+		setTitle("MechaSolver");
 
 		Container pane = getContentPane();
 
@@ -63,6 +63,7 @@ public class MainWindow extends JFrame implements ActionListener {
 			m_solids.clear();
 			m_joints.clear();
 			m_mainArea.repaint();
+			m_mainArea.m_mode = MainArea.Mode.NONE;
 		}
 	}
 }
