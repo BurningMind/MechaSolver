@@ -9,7 +9,8 @@ public class MainArea extends JPanel implements MouseInputListener {
 		REVOLUTE,
 		PRISMATIC,
 		LINE1,
-		LINE2
+		LINE2,
+		SETANGLE
 	}
 
 	public final double SNAPPING_DISTANCE = 20.0;
@@ -51,10 +52,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 		// We check distances until we find a joint within our radius, else we return a null
 		Joint joint = null;
 		for (Joint j : m_mainWindow.m_joints) {
-			Point absPos = j.getAbsolutePosition();
-			int x = p.m_x - absPos.m_x;
-			int y = p.m_y - absPos.m_y;
-			if (Math.sqrt(x*x + y*y) <= SNAPPING_DISTANCE) {
+			if (p.distance(j.m_position) <= SNAPPING_DISTANCE) {
 				joint = j;
 				break;
 			}
@@ -79,11 +77,6 @@ public class MainArea extends JPanel implements MouseInputListener {
 		return new Pair<Solid, Point>(solid, point);
 	}
 
-	public void createSecondLink(Joint joint, Solid solid) {
-		solid.m_joints.add(joint);
-		joint.m_s2 = solid;
-	}
-
 	public Pair<Joint, Solid> getInCreationJoint(Point current_point) {
 		// We get a point from a nearby solid onto it
 		Pair<Solid, Point> pair = getNearbySolidAndPoint(current_point);
@@ -101,9 +94,9 @@ public class MainArea extends JPanel implements MouseInputListener {
 		// We create the joint
 		Joint joint;
 		if (m_mode == Mode.REVOLUTE) {
-			joint = new Revolute(solid, null, point, new Point(0, 0), "rev", 0.0);
+			joint = new Revolute(solid, null, point, String.valueOf(m_mainWindow.m_joints.size()));
 		} else if (m_mode == Mode.PRISMATIC) {
-			joint = new Prismatic(solid, null, point, new Point(0, 0), "pris", 0.0);
+			joint = new Prismatic(solid, null, point, String.valueOf(m_mainWindow.m_joints.size()));
 		} else {
 			return null;
 		}
@@ -118,28 +111,14 @@ public class MainArea extends JPanel implements MouseInputListener {
 		if (joint == null) { // If we don't snap, create the solid freely
 			p = current_point;
 		} else { // If we snap, set the second point to the joint
-			p = joint.getAbsolutePosition();
+			p = joint.m_position;
 		}
 
 		// We create the line object between the joint and the new point
-		Point absPos = m_solidCreationJoint.getAbsolutePosition();
-		int d_x = p.m_x - absPos.m_x;
-		int d_y = p.m_y - absPos.m_y;
-		Line new_line = new Line(m_solidCreationJoint, Math.sqrt(d_x * d_x + d_y * d_y));
+		int d_x = p.m_x - m_solidCreationJoint.m_position.m_x;
+		int d_y = p.m_y - m_solidCreationJoint.m_position.m_y;
 
-		// If the line is attached to a revolute, then we rotate its parameter to match the line drawn
-		if (new_line.m_coordSystem.m_rotZ != null) {
-			new_line.m_coordSystem.m_rotZ.m_value = Math.atan2(d_y, d_x) - m_solidCreationJoint.m_s1.getAbsoluteRotation();
-		} else { // else we normalize its length
-			if (new_line.m_coordSystem.m_transX != null && new_line.m_coordSystem.m_transY == null) {
-				new_line.m_length = Math.abs(d_x);
-				if (d_x < 0) {
-					new_line.m_direction = -1;
-				}
-			} else if (new_line.m_coordSystem.m_transX == null && new_line.m_coordSystem.m_transY != null) {
-
-			}
-		}
+		Line new_line = new Line(m_solidCreationJoint.m_position, Math.sqrt(d_x * d_x + d_y * d_y), Math.atan2(d_y, d_x));
 
 		return new Pair<Line, Joint>(new_line, joint);
 	}
@@ -160,13 +139,29 @@ public class MainArea extends JPanel implements MouseInputListener {
 			Joint joint = pair.b;
 
 			if (joint != null) { // If we snap to a second joint
-				createSecondLink(joint, new_line);
+				new_line.m_joints.add(joint);
+				joint.m_freeSolid = new_line;
+
+				if (m_solidCreationJoint instanceof Revolute && joint instanceof Revolute) {
+					m_solidCreationJoint.m_constraints.add(new Distance(joint, joint.m_position.distance(m_solidCreationJoint.m_position)));
+					joint.m_constraints.add(new Distance(m_solidCreationJoint, joint.m_position.distance(m_solidCreationJoint.m_position)));
+				} else if (m_solidCreationJoint instanceof Prismatic || joint instanceof Prismatic) {
+					m_solidCreationJoint.m_constraints.add(new Alignment(joint, new Vector(joint.m_position, m_solidCreationJoint.m_position)));
+					joint.m_constraints.add(new Alignment(m_solidCreationJoint, new Vector(m_solidCreationJoint.m_position, joint.m_position)));
+				}
+
+				if (m_solidCreationJoint instanceof Prismatic && joint instanceof Revolute) {
+					new_line.m_position = joint.m_position;
+					new_line.m_angle = new_line.m_angle + Math.PI;
+				}
 			}
+
+			new_line.m_joints.add(m_solidCreationJoint);
 
 			m_mainWindow.m_solids.add(new_line);
 
 			// We add the line to the initial joint
-			m_solidCreationJoint.m_s2 = new_line;
+			m_solidCreationJoint.m_freeSolid = new_line;
 
 			m_mode = Mode.LINE1;
 		} else if (m_mode == Mode.REVOLUTE || m_mode == Mode.PRISMATIC) { // We create a joint
@@ -178,8 +173,47 @@ public class MainArea extends JPanel implements MouseInputListener {
 				return;
 			}
 
+			if (solid.m_isGround) {
+				joint.m_constraints.add(new Fixed());
+			}
+			
+			for (Joint j : solid.m_joints) {
+				if (j instanceof Revolute && joint instanceof Revolute) {
+					j.m_constraints.add(new Distance(joint, joint.m_position.distance(j.m_position)));
+					joint.m_constraints.add(new Distance(j, joint.m_position.distance(j.m_position)));
+				} else if (j instanceof Prismatic || joint instanceof Prismatic) {
+					j.m_constraints.add(new Alignment(joint, new Vector(joint.m_position, j.m_position)));
+					joint.m_constraints.add(new Alignment(j, new Vector(j.m_position, joint.m_position)));
+				}
+
+				if (j instanceof Prismatic && joint instanceof Revolute) {
+					solid.m_position = joint.m_position;
+					solid.m_angle = solid.m_angle + Math.PI;
+				}
+			}
+
 			m_mainWindow.m_joints.add(joint);
 			solid.m_joints.add(joint);
+		} else if (m_mode == Mode.SETANGLE) {
+			Joint joint = getNearbyJoint(new Point(e.getX(), e.getY()));
+
+			if (joint != null) {
+				m_mainWindow.removeConstraints();
+				m_mainWindow.setConstraint(new Angle(Math.PI / 4.0), joint);
+				m_mainWindow.solveConstraints(joint, null);
+
+				for (Solid s : m_mainWindow.m_solids) {
+					for (Joint j : s.m_joints) {
+						if (j.m_position != s.m_position) {
+							int d_x = j.m_position.m_x - s.m_position.m_x;
+							int d_y = j.m_position.m_y - s.m_position.m_y;
+
+							s.m_angle = Math.atan2(d_y, d_x);
+							break;
+						}
+					}
+				}
+			}
 		}
 
 		repaint();

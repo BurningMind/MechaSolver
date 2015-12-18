@@ -1,17 +1,18 @@
 public class Vector {
 
-    public Point m_origin;
-    public double m_angleToGround;
+    private Point m_a, m_b;
 
     //Constructor
-    public Vector (Point origin, double angleToGround) {
-        m_origin = origin;
-        m_angleToGround = angleToGround;
+    public Vector (Point a, Point b) {
+        m_a = a;
+        m_b = b;
     }
 
-    //Returns the angle with respect to another Vector
-    public double angle ( Vector otherVector) {
-        double retRotation = (double) (otherVector.m_angleToGround - m_angleToGround);
-        return retRotation;
+    public int getX() {
+        return m_b.m_x - m_a.m_x;
+    }
+
+    public int getY() {
+        return m_b.m_y - m_a.m_y;
     }
 }

@@ -2,7 +2,7 @@ import java.awt.*;
 
 public class Ground extends Solid {
 	public Ground() {
-		super(null);
+		super(new Point(0, 0), 0.0);
 		m_isGround = true;
 	}
 
@@ -10,7 +10,7 @@ public class Ground extends Solid {
 		return null;
 	}
 
-	@Override
+	/*@Override
 	public Point getAbsoluteOrigin() {
 		return new Point(0, 0);
 	}
@@ -23,7 +23,7 @@ public class Ground extends Solid {
 	@Override
 	public double getAbsoluteRotation() {
 		return 0.0;
-	}
+	}*/
 
 	public void draw(Graphics g) {
 

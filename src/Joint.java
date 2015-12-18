@@ -1,27 +1,122 @@
 import java.awt.*;
+import java.util.HashSet;
 
 abstract public class Joint {
 
-    public Solid m_s1, m_s2;
-    public Parameter m_transX, m_transY, m_rotZ;
-    public Point m_pS1, m_pS2;
+    public Solid m_anchor;
+    public Solid m_freeSolid;
+    public HashSet<Constraint> m_constraints;
+    public Point m_position;
+    public String m_name;
 
     //Constructor
-    public Joint(Solid s1, Solid s2, Point pS1, Point pS2) {
-        m_s1 = s1;
-        m_s2 = s2;
-        m_pS1 = pS1;
-        m_pS2 = pS2;
+    public Joint(Solid anchor, Solid freeSolid, Point position, String name) {
+        m_anchor = anchor;
+        m_freeSolid = freeSolid;
+        m_position = position;
+        m_name = name;
+        m_constraints = new HashSet<Constraint>();
     }
 
     abstract public void draw(Graphics g);
 
-    public Point getAbsolutePosition() {
+    /*public Point getAbsolutePosition() {
         double rot = m_s1.getAbsoluteRotation();
         Point absPos = m_s1.getAbsolutePosition();
         int x = (int)(absPos.m_x + (m_pS1.m_x * Math.cos(rot) - m_pS1.m_y * Math.sin(rot)));
         int y = (int)(absPos.m_y + (m_pS1.m_x * Math.sin(rot) + m_pS1.m_y * Math.cos(rot)));
 
 		return new Point(x , y);
-	}
+	}*/
+
+    public boolean hasFixedConstraint() {
+        for (Constraint c : m_constraints) {
+            if (c instanceof Fixed) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public Distance hasDistanceConstraint(Joint parent) {
+        for (Constraint c : m_constraints) {
+            if (c instanceof Distance) {
+                if (((Distance)c).m_origin == parent) {
+                    continue;
+                }
+
+                return (Distance)c;
+            }
+        }
+
+        return null;
+    }
+
+    public Pair<Distance, Distance> hasTwoDistanceConstraints(Joint parent) {
+        int counter = 0;
+        Distance d1 = null;
+        Distance d2 = null;
+        for (Constraint c : m_constraints) {
+            if (c instanceof Distance) {
+                if (((Distance)c).m_origin == parent) {
+                    continue;
+                }
+
+                if (counter == 0) {
+                    d1 = (Distance)c;
+                } else if (counter == 1) {
+                    d2 = (Distance)c;
+                } else {
+                    break;
+                }
+
+                counter++;
+            }
+        }
+
+        if (counter < 2) {
+            return null;
+        } else {
+            return new Pair<Distance, Distance>(d1, d2);
+        }
+    }
+
+    public Pair<Distance, Alignment> hasOneDistanceAndOneAlignmentConstraints(Joint parent) {
+        boolean found_dist = false;
+        boolean found_align = false;
+        Distance d = null;
+        Alignment a = null;
+        for (Constraint c : m_constraints) {
+            if (c instanceof Distance) {
+                if (((Distance)c).m_origin == parent) {
+                    continue;
+                }
+
+                if (!found_dist) {
+                    d = (Distance)c;
+                    found_dist = true;
+                } else {
+                    continue;
+                }
+            } else if (c instanceof Alignment) {
+                if (((Alignment)c).m_origin == parent) {
+                    continue;
+                }
+
+                if (!found_align) {
+                    a = (Alignment)c;
+                    found_align = true;
+                } else {
+                    continue;
+                }
+            }
+        }
+
+        if (!found_dist || !found_align) {
+            return null;
+        } else {
+            return new Pair<Distance, Alignment>(d, a);
+        }
+    }
 }
