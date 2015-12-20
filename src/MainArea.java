@@ -158,7 +158,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 
 			new_line.m_joints.add(m_solidCreationJoint);
 
-			m_mainWindow.m_solids.add(new_line);
+			m_mainWindow.addSolid(new_line);
 
 			// We add the line to the initial joint
 			m_solidCreationJoint.m_freeSolid = new_line;

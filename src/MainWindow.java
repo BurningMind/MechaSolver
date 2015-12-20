@@ -9,12 +9,20 @@ public class MainWindow extends JFrame implements ActionListener {
 	JButton m_addLineButton;
 	JButton m_setAngleButton;
 	JButton m_clear;
+
+	JLabel m_dispSolids;
+
+	JPanel m_insideProgram;
+	JPanel m_infoIP;
+	JPanel m_exeIP;
+
 	MainArea m_mainArea;
 
 	public HashSet<Solid> m_solids;
 	public HashSet<Joint> m_joints;
 	public HashSet<Constraint> m_tempConstraints;
 	public Ground m_ground;
+	public final Dimension DIM_INSIDEPROG = new Dimension (300, 400);
 
 	//Constructor
 	public MainWindow() {
@@ -22,6 +30,27 @@ public class MainWindow extends JFrame implements ActionListener {
 		setTitle("MechaSolver");
 
 		Container pane = getContentPane();
+
+		m_mainArea = new MainArea(this);
+		pane.add(m_mainArea, BorderLayout.CENTER);
+
+		m_insideProgram = new JPanel();
+		m_insideProgram.setLayout(null);
+		m_insideProgram.setBackground(Color.BLACK);
+		m_insideProgram.setMinimumSize(DIM_INSIDEPROG);
+		m_insideProgram.setPreferredSize(DIM_INSIDEPROG);
+
+		m_infoIP = new JPanel();
+		m_infoIP.setBackground(Color.GRAY);
+		m_infoIP.setBounds(10, 10, 280, 300);
+
+		m_exeIP = new JPanel();
+		m_exeIP.setBackground(Color.GRAY);
+		m_exeIP.setBounds(10, 320, 280, 300);
+
+		m_insideProgram.add(m_infoIP);
+		m_insideProgram.add(m_exeIP);
+		pane.add(m_insideProgram, BorderLayout.LINE_END);
 
 		JToolBar toolBar = new JToolBar();
 		pane.add(toolBar, BorderLayout.PAGE_START);
@@ -45,9 +74,6 @@ public class MainWindow extends JFrame implements ActionListener {
 		m_clear = new JButton ("Clear");
 		m_clear.addActionListener(this);
 		toolBar.add(m_clear);
-
-		m_mainArea = new MainArea(this);
-		pane.add(m_mainArea, BorderLayout.CENTER);
 
 		m_solids = new HashSet<Solid>();
 		m_joints = new HashSet<Joint>();
@@ -135,6 +161,12 @@ public class MainWindow extends JFrame implements ActionListener {
 			}
 		}
 	}
+
+	public void addSolid (Solid solid) {
+		m_solids.add(solid);
+
+	}
+
 
 	public void solveConstraints(Joint j, Joint parent) {
 		System.out.print("Joint " + j.m_name + ": ");
