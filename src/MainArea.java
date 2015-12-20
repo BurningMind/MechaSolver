@@ -175,8 +175,10 @@ public class MainArea extends JPanel implements MouseInputListener {
 
 			if (solid.m_isGround) {
 				joint.m_constraints.add(new Fixed());
+			} else {
+				solid.m_joints.add(joint);
 			}
-			
+
 			for (Joint j : solid.m_joints) {
 				if (j instanceof Revolute && joint instanceof Revolute) {
 					j.m_constraints.add(new Distance(joint, joint.m_position.distance(j.m_position)));
@@ -193,12 +195,14 @@ public class MainArea extends JPanel implements MouseInputListener {
 			}
 
 			m_mainWindow.m_joints.add(joint);
-			solid.m_joints.add(joint);
 		} else if (m_mode == Mode.SETANGLE) {
 			Joint joint = getNearbyJoint(new Point(e.getX(), e.getY()));
 
 			if (joint != null) {
 				m_mainWindow.removeConstraints();
+				for (Joint j : m_mainWindow.m_joints) {
+					j.m_defined = j.hasFixedConstraint();
+				}
 				m_mainWindow.setConstraint(new Angle(Math.PI / 4.0), joint);
 				m_mainWindow.solveConstraints(joint, null);
 

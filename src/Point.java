@@ -13,4 +13,8 @@ public class Point {
         double dy = m_y - otherPoint.m_y;
         return Math.sqrt(dx * dx + dy * dy);
     }
+
+    public double angle(Point p1, Point p2) {
+        return Math.atan2(p2.m_x - m_x, p2.m_y - m_y) - Math.atan2(p1.m_x - m_x, p1.m_y - m_y);
+    }
 }

@@ -9,6 +9,8 @@ abstract public class Joint {
     public Point m_position;
     public String m_name;
 
+    public boolean m_defined = false;
+
     //Constructor
     public Joint(Solid anchor, Solid freeSolid, Point position, String name) {
         m_anchor = anchor;
@@ -39,10 +41,18 @@ abstract public class Joint {
         return false;
     }
 
-    public Distance hasDistanceConstraint(Joint parent) {
+    public Distance hasDistanceConstraint(Joint except, Joint priority) {
         for (Constraint c : m_constraints) {
             if (c instanceof Distance) {
-                if (((Distance)c).m_origin == parent) {
+                if (((Distance)c).m_origin == priority) {
+                    return (Distance)c;
+                }
+            }
+        }
+
+        for (Constraint c : m_constraints) {
+            if (c instanceof Distance) {
+                if (((Distance)c).m_origin == except || ((Distance)c).m_origin == this) {
                     continue;
                 }
 
@@ -53,13 +63,30 @@ abstract public class Joint {
         return null;
     }
 
-    public Pair<Distance, Distance> hasTwoDistanceConstraints(Joint parent) {
+    public Pair<Distance, Distance> hasTwoDistanceConstraints(Joint except, Joint priority) {
         int counter = 0;
         Distance d1 = null;
         Distance d2 = null;
+
         for (Constraint c : m_constraints) {
             if (c instanceof Distance) {
-                if (((Distance)c).m_origin == parent) {
+                if (((Distance)c).m_origin == priority) {
+                    if (counter == 0) {
+                        d1 = (Distance)c;
+                    } else if (counter == 1) {
+                        d2 = (Distance)c;
+                    } else {
+                        break;
+                    }
+
+                    counter++;
+                }
+            }
+        }
+
+        for (Constraint c : m_constraints) {
+            if (c instanceof Distance) {
+                if (((Distance)c).m_origin == except || ((Distance)c).m_origin == this) {
                     continue;
                 }
 
@@ -82,14 +109,36 @@ abstract public class Joint {
         }
     }
 
-    public Pair<Distance, Alignment> hasOneDistanceAndOneAlignmentConstraints(Joint parent) {
+    public Pair<Distance, Alignment> hasOneDistanceAndOneAlignmentConstraints(Joint except, Joint priority) {
         boolean found_dist = false;
         boolean found_align = false;
         Distance d = null;
         Alignment a = null;
         for (Constraint c : m_constraints) {
             if (c instanceof Distance) {
-                if (((Distance)c).m_origin == parent) {
+                if (((Distance)c).m_origin == priority) {
+                    if (!found_dist) {
+                        d = (Distance)c;
+                        found_dist = true;
+                    } else {
+                        continue;
+                    }
+                }
+            } else if (c instanceof Alignment) {
+                if (((Alignment)c).m_origin == priority) {
+                    if (!found_align) {
+                        a = (Alignment)c;
+                        found_align = true;
+                    } else {
+                        continue;
+                    }
+                }
+            }
+        }
+
+        for (Constraint c : m_constraints) {
+            if (c instanceof Distance) {
+                if (((Distance)c).m_origin == except || ((Distance)c).m_origin == this) {
                     continue;
                 }
 
@@ -100,7 +149,7 @@ abstract public class Joint {
                     continue;
                 }
             } else if (c instanceof Alignment) {
-                if (((Alignment)c).m_origin == parent) {
+                if (((Alignment)c).m_origin == except || ((Alignment)c).m_origin == this) {
                     continue;
                 }
 
