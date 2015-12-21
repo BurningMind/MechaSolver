@@ -10,6 +10,7 @@ abstract public class Joint {
     public String m_name;
 
     public boolean m_defined = false;
+    public boolean m_visited = false;
 
     //Constructor
     public Joint(Solid anchor, Solid freeSolid, Point position, String name) {
@@ -86,7 +87,7 @@ abstract public class Joint {
 
         for (Constraint c : m_constraints) {
             if (c instanceof Distance) {
-                if (((Distance)c).m_origin == except || ((Distance)c).m_origin == this) {
+                if (((Distance)c).m_origin == except || ((Distance)c).m_origin == this || ((Distance)c).m_origin == priority) {
                     continue;
                 }
 
@@ -138,7 +139,7 @@ abstract public class Joint {
 
         for (Constraint c : m_constraints) {
             if (c instanceof Distance) {
-                if (((Distance)c).m_origin == except || ((Distance)c).m_origin == this) {
+                if (((Distance)c).m_origin == except || ((Distance)c).m_origin == this || ((Distance)c).m_origin == priority) {
                     continue;
                 }
 
@@ -149,7 +150,7 @@ abstract public class Joint {
                     continue;
                 }
             } else if (c instanceof Alignment) {
-                if (((Alignment)c).m_origin == except || ((Alignment)c).m_origin == this) {
+                if (((Alignment)c).m_origin == except || ((Alignment)c).m_origin == this || ((Alignment)c).m_origin == priority) {
                     continue;
                 }
 

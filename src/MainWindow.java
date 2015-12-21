@@ -115,7 +115,7 @@ public class MainWindow extends JFrame implements ActionListener {
 	public void setConstraint(Constraint c, Joint j) {
 		m_tempConstraints.add(c);
 
-		if (c instanceof Angle) {
+		if (c instanceof Angle && j instanceof Revolute) {
 			if (j.hasFixedConstraint()) {
 				Distance d = j.hasDistanceConstraint(null, null);
 				if (d != null) {
@@ -159,6 +159,8 @@ public class MainWindow extends JFrame implements ActionListener {
 
 				return;
 			}
+		} else if (c instanceof Distance && j instanceof Prismatic) {
+			j.m_constraints.add(c);
 		}
 	}
 
@@ -170,6 +172,11 @@ public class MainWindow extends JFrame implements ActionListener {
 
 	public void solveConstraints(Joint j, Joint parent) {
 		System.out.print("Joint " + j.m_name + ": ");
+
+		if (j.m_visited) {
+			return;
+		}
+		j.m_visited = true;
 
 		if (j.m_defined && parent != null && parent.m_defined) {
 			System.out.println("ignore");

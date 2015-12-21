@@ -120,6 +120,16 @@ public class MainArea extends JPanel implements MouseInputListener {
 
 		Line new_line = new Line(m_solidCreationJoint.m_position, Math.sqrt(d_x * d_x + d_y * d_y), Math.atan2(d_y, d_x));
 
+		if (m_solidCreationJoint instanceof Prismatic) {
+			if (d_x > 0) {
+				new_line.m_angle = 0;
+			} else {
+				new_line.m_angle = Math.PI;
+			}
+
+			new_line.m_length = Math.abs(d_x);
+		}
+
 		return new Pair<Line, Joint>(new_line, joint);
 	}
 
@@ -202,6 +212,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 				m_mainWindow.removeConstraints();
 				for (Joint j : m_mainWindow.m_joints) {
 					j.m_defined = j.hasFixedConstraint();
+					j.m_visited = false;
 				}
 				m_mainWindow.setConstraint(new Angle(Math.PI / 4.0), joint);
 				m_mainWindow.solveConstraints(joint, null);
