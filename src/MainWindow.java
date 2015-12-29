@@ -1,14 +1,16 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.HashSet;
+import java.util.*;
+import javax.swing.event.*;
 
-public class MainWindow extends JFrame implements ActionListener {
+public class MainWindow extends JFrame implements ActionListener, ChangeListener {
 	JButton m_addRevoluteButton;
 	JButton m_addPrismaticButton;
 	JButton m_addLineButton;
 	JButton m_setAngleButton;
 	JButton m_clear;
+	HashMap<JSlider, Joint> m_jointSliders;
 
 	JLabel m_dispSolids;
 
@@ -18,8 +20,8 @@ public class MainWindow extends JFrame implements ActionListener {
 
 	MainArea m_mainArea;
 
-	public HashSet<Solid> m_solids;
-	public HashSet<Joint> m_joints;
+	public ArrayList<Solid> m_solids;
+	public ArrayList<Joint> m_joints;
 	public HashSet<Constraint> m_tempConstraints;
 	public Ground m_ground;
 	public final Dimension DIM_INSIDEPROG = new Dimension (300, 400);
@@ -35,18 +37,17 @@ public class MainWindow extends JFrame implements ActionListener {
 		pane.add(m_mainArea, BorderLayout.CENTER);
 
 		m_insideProgram = new JPanel();
-		m_insideProgram.setLayout(null);
-		m_insideProgram.setBackground(Color.BLACK);
+		m_insideProgram.setLayout(new BoxLayout(m_insideProgram, BoxLayout.Y_AXIS));
 		m_insideProgram.setMinimumSize(DIM_INSIDEPROG);
 		m_insideProgram.setPreferredSize(DIM_INSIDEPROG);
 
 		m_infoIP = new JPanel();
-		m_infoIP.setBackground(Color.GRAY);
-		m_infoIP.setBounds(10, 10, 280, 300);
+		m_infoIP.setLayout(new BoxLayout(m_infoIP, BoxLayout.Y_AXIS));
+		m_infoIP.setMinimumSize(new Dimension(300, 400));
+		m_infoIP.setPreferredSize(new Dimension(300, 400));
 
 		m_exeIP = new JPanel();
 		m_exeIP.setBackground(Color.GRAY);
-		m_exeIP.setBounds(10, 320, 280, 300);
 
 		m_insideProgram.add(m_infoIP);
 		m_insideProgram.add(m_exeIP);
@@ -75,14 +76,71 @@ public class MainWindow extends JFrame implements ActionListener {
 		m_clear.addActionListener(this);
 		toolBar.add(m_clear);
 
-		m_solids = new HashSet<Solid>();
-		m_joints = new HashSet<Joint>();
+		m_solids = new ArrayList<Solid>();
+		m_jointSliders = new HashMap<JSlider, Joint>();
+		m_joints = new ArrayList<Joint>();
 		m_tempConstraints = new HashSet<Constraint>();
 		m_ground = new Ground();
 
 		pack();
 		setSize(1200,700);
 		setVisible(true);
+	}
+
+
+	public void addSolid (Solid solid) {
+		m_solids.add(solid);
+	}
+
+	public void addJoint (Joint joint) {
+		m_joints.add(joint);
+
+		JPanel jointPanel = new JPanel();
+		jointPanel.setLayout(new BoxLayout(jointPanel, BoxLayout.Y_AXIS));
+		jointPanel.setMaximumSize(new Dimension(300, 100));
+		jointPanel.setPreferredSize(new Dimension(300, 100));
+
+		jointPanel.add(new JLabel("Joint " + m_joints.size()));
+
+		JSlider slider = new JSlider(JSlider.HORIZONTAL, 0, 360, 0);
+		slider.addChangeListener(this);
+
+		jointPanel.add(slider);
+
+		m_jointSliders.put(slider, joint);
+
+		m_infoIP.add(jointPanel);
+		m_infoIP.revalidate();
+		repaint();
+	}
+
+	public void stateChanged(ChangeEvent e) {
+		JSlider slider = (JSlider)e.getSource();
+		setJointAngle(m_jointSliders.get(slider), Math.toRadians(slider.getValue()));
+
+		repaint();
+	}
+
+	public void setJointAngle(Joint joint, double angle) {
+		removeConstraints();
+		for (Joint j : m_joints) {
+			j.m_defined = j.hasFixedConstraint();
+			j.m_visited = false;
+		}
+		setConstraint(new Angle(angle), joint);
+		solveConstraints(joint, null);
+
+		for (Solid s : m_solids) {
+			for (Joint j : s.m_joints) {
+				if (j.m_position != s.m_position) {
+					int d_x = j.m_position.m_x - s.m_position.m_x;
+					int d_y = j.m_position.m_y - s.m_position.m_y;
+
+					s.m_angle = Math.atan2(d_y, d_x);
+					break;
+				}
+			}
+		}
 	}
 
 	public void actionPerformed(ActionEvent e) {
@@ -163,12 +221,6 @@ public class MainWindow extends JFrame implements ActionListener {
 			j.m_constraints.add(c);
 		}
 	}
-
-	public void addSolid (Solid solid) {
-		m_solids.add(solid);
-
-	}
-
 
 	public void solveConstraints(Joint j, Joint parent) {
 		System.out.print("Joint " + j.m_name + ": ");

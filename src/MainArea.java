@@ -204,7 +204,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 				}
 			}
 
-			m_mainWindow.m_joints.add(joint);
+			m_mainWindow.addJoint(joint);
 		} else if (m_mode == Mode.SETANGLE) {
 			Joint joint = getNearbyJoint(new Point(e.getX(), e.getY()));
 
