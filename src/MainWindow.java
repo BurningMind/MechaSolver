@@ -116,7 +116,12 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 	public void stateChanged(ChangeEvent e) {
 		JSlider slider = (JSlider)e.getSource();
-		setJointAngle(m_jointSliders.get(slider), Math.toRadians(slider.getValue()));
+
+		if (m_jointSliders.get(slider) instanceof Revolute) {
+			setJointAngle(m_jointSliders.get(slider), Math.toRadians(slider.getValue()));
+		} else if (m_jointSliders.get(slider) instanceof Prismatic) {
+			setJointDistance(m_jointSliders.get(slider), slider.getValue());
+		}
 
 		repaint();
 	}
@@ -128,6 +133,30 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			j.m_visited = false;
 		}
 		setConstraint(new Angle(angle), joint);
+		solveConstraints(joint, null);
+
+		for (Solid s : m_solids) {
+			for (Joint j : s.m_joints) {
+				if (j.m_position != s.m_position) {
+					int d_x = j.m_position.m_x - s.m_position.m_x;
+					int d_y = j.m_position.m_y - s.m_position.m_y;
+
+					s.m_angle = Math.atan2(d_y, d_x);
+					break;
+				}
+			}
+		}
+	}
+
+	public void setJointDistance(Joint joint, double dist) {
+		removeConstraints();
+		for (Joint j : m_joints) {
+			j.m_defined = j.hasFixedConstraint();
+			j.m_visited = false;
+		}
+		setConstraint(new Distance(joint, dist + ((Line)joint.m_freeSolid).m_length), joint.hasAlignmentConstraint(null, null).m_origin);
+
+		setConstraint(new Distance(joint.hasAlignmentConstraint(null, null).m_origin, dist + ((Line)joint.m_freeSolid).m_length), joint);
 		solveConstraints(joint, null);
 
 		for (Solid s : m_solids) {
@@ -217,6 +246,8 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 				return;
 			}
+		} else if (c instanceof Distance && ((Distance)c).m_origin instanceof Prismatic) {
+			j.m_constraints.add(c);
 		} else if (c instanceof Distance && j instanceof Prismatic) {
 			j.m_constraints.add(c);
 		}
@@ -309,9 +340,17 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 					if (Math.abs(old_angle - new_angle0) < Math.abs(old_angle - new_angle1)) {
 						j.m_position.m_x = new_points[0].m_x;
 						j.m_position.m_y = new_points[0].m_y;
-					} else {
+					} else if (Math.abs(old_angle - new_angle0) > Math.abs(old_angle - new_angle1)) {
 						j.m_position.m_x = new_points[1].m_x;
 						j.m_position.m_y = new_points[1].m_y;
+					} else {
+						if (j.m_position.distance(new_points[0]) < j.m_position.distance(new_points[1])) {
+							j.m_position.m_x = new_points[0].m_x;
+							j.m_position.m_y = new_points[0].m_y;
+						} else {
+							j.m_position.m_x = new_points[1].m_x;
+							j.m_position.m_y = new_points[1].m_y;
+						}
 					}
 
 					j.m_defined = true;
@@ -337,9 +376,17 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 				if (Math.abs(old_angle - new_angle0) < Math.abs(old_angle - new_angle1)) {
 					j.m_position.m_x = new_points[0].m_x;
 					j.m_position.m_y = new_points[0].m_y;
-				} else {
+				} else if (Math.abs(old_angle - new_angle0) > Math.abs(old_angle - new_angle1)) {
 					j.m_position.m_x = new_points[1].m_x;
 					j.m_position.m_y = new_points[1].m_y;
+				} else {
+					if (j.m_position.distance(new_points[0]) < j.m_position.distance(new_points[1])) {
+						j.m_position.m_x = new_points[0].m_x;
+						j.m_position.m_y = new_points[0].m_y;
+					} else {
+						j.m_position.m_x = new_points[1].m_x;
+						j.m_position.m_y = new_points[1].m_y;
+					}
 				}
 
 				j.m_defined = true;
@@ -363,9 +410,17 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 				if (Math.abs(old_angle - new_angle0) < Math.abs(old_angle - new_angle1)) {
 					j.m_position.m_x = new_points[0].m_x;
 					j.m_position.m_y = new_points[0].m_y;
-				} else {
+				} else if (Math.abs(old_angle - new_angle0) > Math.abs(old_angle - new_angle1)) {
 					j.m_position.m_x = new_points[1].m_x;
 					j.m_position.m_y = new_points[1].m_y;
+				} else {
+					if (j.m_position.distance(new_points[0]) < j.m_position.distance(new_points[1])) {
+						j.m_position.m_x = new_points[0].m_x;
+						j.m_position.m_y = new_points[0].m_y;
+					} else {
+						j.m_position.m_x = new_points[1].m_x;
+						j.m_position.m_y = new_points[1].m_y;
+					}
 				}
 
 				j.m_defined = true;
@@ -383,9 +438,17 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 				if (Math.abs(old_angle - new_angle0) < Math.abs(old_angle - new_angle1)) {
 					j.m_position.m_x = new_points[0].m_x;
 					j.m_position.m_y = new_points[0].m_y;
-				} else {
+				} else if (Math.abs(old_angle - new_angle0) > Math.abs(old_angle - new_angle1)) {
 					j.m_position.m_x = new_points[1].m_x;
 					j.m_position.m_y = new_points[1].m_y;
+				} else {
+					if (j.m_position.distance(new_points[0]) < j.m_position.distance(new_points[1])) {
+						j.m_position.m_x = new_points[0].m_x;
+						j.m_position.m_y = new_points[0].m_y;
+					} else {
+						j.m_position.m_x = new_points[1].m_x;
+						j.m_position.m_y = new_points[1].m_y;
+					}
 				}
 
 				j.m_defined = true;

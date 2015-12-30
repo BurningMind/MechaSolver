@@ -64,6 +64,28 @@ abstract public class Joint {
         return null;
     }
 
+    public Alignment hasAlignmentConstraint(Joint except, Joint priority) {
+        for (Constraint c : m_constraints) {
+            if (c instanceof Alignment) {
+                if (((Alignment)c).m_origin == priority) {
+                    return (Alignment)c;
+                }
+            }
+        }
+
+        for (Constraint c : m_constraints) {
+            if (c instanceof Alignment) {
+                if (((Alignment)c).m_origin == except || ((Alignment)c).m_origin == this) {
+                    continue;
+                }
+
+                return (Alignment)c;
+            }
+        }
+
+        return null;
+    }
+
     public Pair<Distance, Distance> hasTwoDistanceConstraints(Joint except, Joint priority) {
         int counter = 0;
         Distance d1 = null;
