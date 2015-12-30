@@ -140,6 +140,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			m_joints.clear();
 			m_mainArea.repaint();
 			m_infoIP.removeAll();
+			m_jointSliders.clear();
 			repaint();
 			m_mainArea.m_mode = MainArea.Mode.NONE;
 		}
