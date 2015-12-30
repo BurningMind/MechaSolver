@@ -87,7 +87,6 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 		setVisible(true);
 	}
 
-
 	public void addSolid (Solid solid) {
 		m_solids.add(solid);
 	}
@@ -103,6 +102,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 		jointPanel.add(new JLabel("Joint " + m_joints.size()));
 
 		JSlider slider = new JSlider(JSlider.HORIZONTAL, 0, 360, 0);
+
 		slider.addChangeListener(this);
 
 		jointPanel.add(slider);
@@ -126,52 +126,6 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 		repaint();
 	}
 
-	public void setJointAngle(Joint joint, double angle) {
-		removeConstraints();
-		for (Joint j : m_joints) {
-			j.m_defined = j.hasFixedConstraint();
-			j.m_visited = false;
-		}
-		setConstraint(new Angle(angle), joint);
-		solveConstraints(joint, null);
-
-		for (Solid s : m_solids) {
-			for (Joint j : s.m_joints) {
-				if (j.m_position != s.m_position) {
-					int d_x = j.m_position.m_x - s.m_position.m_x;
-					int d_y = j.m_position.m_y - s.m_position.m_y;
-
-					s.m_angle = Math.atan2(d_y, d_x);
-					break;
-				}
-			}
-		}
-	}
-
-	public void setJointDistance(Joint joint, double dist) {
-		removeConstraints();
-		for (Joint j : m_joints) {
-			j.m_defined = j.hasFixedConstraint();
-			j.m_visited = false;
-		}
-		setConstraint(new Distance(joint, dist + ((Line)joint.m_freeSolid).m_length), joint.hasAlignmentConstraint(null, null).m_origin);
-
-		setConstraint(new Distance(joint.hasAlignmentConstraint(null, null).m_origin, dist + ((Line)joint.m_freeSolid).m_length), joint);
-		solveConstraints(joint, null);
-
-		for (Solid s : m_solids) {
-			for (Joint j : s.m_joints) {
-				if (j.m_position != s.m_position) {
-					int d_x = j.m_position.m_x - s.m_position.m_x;
-					int d_y = j.m_position.m_y - s.m_position.m_y;
-
-					s.m_angle = Math.atan2(d_y, d_x);
-					break;
-				}
-			}
-		}
-	}
-
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == m_addRevoluteButton) {
 			m_mainArea.m_mode = MainArea.Mode.REVOLUTE;
@@ -185,6 +139,8 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			m_solids.clear();
 			m_joints.clear();
 			m_mainArea.repaint();
+			m_infoIP.removeAll();
+			repaint();
 			m_mainArea.m_mode = MainArea.Mode.NONE;
 		}
 	}
@@ -250,6 +206,52 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			j.m_constraints.add(c);
 		} else if (c instanceof Distance && j instanceof Prismatic) {
 			j.m_constraints.add(c);
+		}
+	}
+
+	public void setJointAngle(Joint joint, double angle) {
+		removeConstraints();
+		for (Joint j : m_joints) {
+			j.m_defined = j.hasFixedConstraint();
+			j.m_visited = false;
+		}
+		setConstraint(new Angle(angle), joint);
+		solveConstraints(joint, null);
+
+		for (Solid s : m_solids) {
+			for (Joint j : s.m_joints) {
+				if (j.m_position != s.m_position) {
+					int d_x = j.m_position.m_x - s.m_position.m_x;
+					int d_y = j.m_position.m_y - s.m_position.m_y;
+
+					s.m_angle = Math.atan2(d_y, d_x);
+					break;
+				}
+			}
+		}
+	}
+
+	public void setJointDistance(Joint joint, double dist) {
+		removeConstraints();
+		for (Joint j : m_joints) {
+			j.m_defined = j.hasFixedConstraint();
+			j.m_visited = false;
+		}
+		setConstraint(new Distance(joint, dist + ((Line)joint.m_freeSolid).m_length), joint.hasAlignmentConstraint(null, null).m_origin);
+
+		setConstraint(new Distance(joint.hasAlignmentConstraint(null, null).m_origin, dist + ((Line)joint.m_freeSolid).m_length), joint);
+		solveConstraints(joint, null);
+
+		for (Solid s : m_solids) {
+			for (Joint j : s.m_joints) {
+				if (j.m_position != s.m_position) {
+					int d_x = j.m_position.m_x - s.m_position.m_x;
+					int d_y = j.m_position.m_y - s.m_position.m_y;
+
+					s.m_angle = Math.atan2(d_y, d_x);
+					break;
+				}
+			}
 		}
 	}
 
