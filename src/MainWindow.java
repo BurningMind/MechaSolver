@@ -221,6 +221,11 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 		for (Solid s : m_solids) {
 			for (Joint j : s.m_joints) {
+				if (s.m_joints.size() == 1) {
+					s.m_angle = j.m_anchor.m_angle + angle;
+					break;
+				}
+
 				if (j.m_position != s.m_position) {
 					int d_x = j.m_position.m_x - s.m_position.m_x;
 					int d_y = j.m_position.m_y - s.m_position.m_y;
