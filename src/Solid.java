@@ -5,6 +5,8 @@ abstract public class Solid {
     public boolean m_isGround;
     public HashSet<Joint> m_joints;
     public Point m_position;
+    public int m_offsetx = 0;
+    public int m_offsety = 0;
     public double m_angle;
 
     //Constructor

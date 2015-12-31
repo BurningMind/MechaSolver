@@ -243,13 +243,26 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			j.m_defined = j.hasFixedConstraint();
 			j.m_visited = false;
 		}
-		setConstraint(new Distance(joint, dist + ((Line)joint.m_freeSolid).m_length), joint.hasAlignmentConstraint(null, null).m_origin);
 
-		setConstraint(new Distance(joint.hasAlignmentConstraint(null, null).m_origin, dist + ((Line)joint.m_freeSolid).m_length), joint);
-		solveConstraints(joint, null);
+		Alignment align = joint.hasAlignmentConstraint(null, null);
+		if (align != null) {
+			setConstraint(new Distance(joint, dist + ((Line)joint.m_freeSolid).m_length), align.m_origin);
+			setConstraint(new Distance(align.m_origin, dist + ((Line)joint.m_freeSolid).m_length), joint);
+			solveConstraints(joint, null);
+		} else {
+			joint.m_freeSolid.m_offsetx = (int)(dist * Math.cos(joint.m_freeSolid.m_angle));
+			joint.m_freeSolid.m_offsety = (int)(dist * Math.sin(joint.m_freeSolid.m_angle));
+		}
+
+
 
 		for (Solid s : m_solids) {
 			for (Joint j : s.m_joints) {
+				if (s.m_joints.size() == 1) {
+					s.m_angle = j.m_anchor.m_angle;
+					break;
+				}
+
 				if (j.m_position != s.m_position) {
 					int d_x = j.m_position.m_x - s.m_position.m_x;
 					int d_y = j.m_position.m_y - s.m_position.m_y;
