@@ -16,5 +16,18 @@ public class Revolute extends Joint {
         } else {
             g.drawOval(m_position.m_x - 5, m_position.m_y - 5, 10, 10);
         }
+
+        if (m_anchor != null && m_freeSolid != null) {
+            double angle = 0.0;
+            if (m_anchor.m_isGround) {
+                angle = m_anchor.m_angle - m_freeSolid.m_angle;
+                g.drawArc(m_position.m_x - 40, m_position.m_y - 40, 80, 80, (int)Math.toDegrees(m_anchor.m_angle), (int)Math.toDegrees(angle));
+            } else {
+                angle = -m_freeSolid.m_angle - (-m_anchor.m_angle - Math.PI);
+                g.drawArc(m_position.m_x - 40, m_position.m_y - 40, 80, 80, (int)Math.toDegrees(-m_anchor.m_angle + Math.PI), (int)Math.toDegrees(angle));
+            }
+
+            g.drawString(String.valueOf((int)Math.toDegrees(angle)), m_position.m_x + 20, m_position.m_y + 20);
+        }
     }
 }

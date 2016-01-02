@@ -219,19 +219,22 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 		setConstraint(new Angle(angle), joint);
 		solveConstraints(joint, null);
 
-		for (Solid s : m_solids) {
-			for (Joint j : s.m_joints) {
-				if (s.m_joints.size() == 1) {
-					s.m_angle = j.m_anchor.m_angle + angle;
-					break;
-				}
+		if (joint.m_freeSolid.m_joints.size() == 1) {
+			if (joint.m_anchor.m_isGround) {
+				joint.m_freeSolid.m_angle = joint.m_anchor.m_angle - angle;
+			} else {
+				joint.m_freeSolid.m_angle = joint.m_anchor.m_angle + Math.PI - angle;
+			}
+		} else {
+			for (Solid s : m_solids) {
+				for (Joint j : s.m_joints) {
+					if (j.m_position != s.m_position) {
+						int d_x = j.m_position.m_x - s.m_position.m_x;
+						int d_y = j.m_position.m_y - s.m_position.m_y;
 
-				if (j.m_position != s.m_position) {
-					int d_x = j.m_position.m_x - s.m_position.m_x;
-					int d_y = j.m_position.m_y - s.m_position.m_y;
-
-					s.m_angle = Math.atan2(d_y, d_x);
-					break;
+						s.m_angle = Math.atan2(d_y, d_x);
+						break;
+					}
 				}
 			}
 		}
@@ -258,6 +261,10 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 		for (Solid s : m_solids) {
 			for (Joint j : s.m_joints) {
+				if (j instanceof Prismatic) {
+					continue;
+				}
+
 				if (s.m_joints.size() == 1) {
 					s.m_angle = j.m_anchor.m_angle;
 					break;
