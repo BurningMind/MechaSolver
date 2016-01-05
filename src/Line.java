@@ -12,20 +12,20 @@ public class Line extends Solid {
 
 	public Point[] getRectangle () {
 		Point topLeft = new Point (
-		(int)(m_position.m_x + m_offsetx + (-1) * WIDTH_LINE * Math.cos(m_angle+Math.PI/2)),
-		(int)(m_position.m_y + m_offsety + (-1) * WIDTH_LINE * Math.sin(m_angle+Math.PI/2)));
+		(int)(m_position.m_x + m_offsetx + (-1) * WIDTH_LINE * Math.cos(-m_angle+Math.PI/2)),
+		(int)(m_position.m_y + m_offsety + (-1) * WIDTH_LINE * Math.sin(-m_angle+Math.PI/2)));
 
 		Point botLeft = new Point (
-		(int)(m_position.m_x + m_offsetx + WIDTH_LINE * Math.cos(m_angle+Math.PI/2)),
-		(int)(m_position.m_y + m_offsety + WIDTH_LINE * Math.sin(m_angle+Math.PI/2)));
+		(int)(m_position.m_x + m_offsetx + WIDTH_LINE * Math.cos(-m_angle+Math.PI/2)),
+		(int)(m_position.m_y + m_offsety + WIDTH_LINE * Math.sin(-m_angle+Math.PI/2)));
 
 		Point topRight = new Point (
-		(int) ((m_position.m_x + m_offsetx + m_length * Math.cos(m_angle)) + (-1) * WIDTH_LINE * Math.cos(m_angle+Math.PI/2)),
-		(int) ((m_position.m_y + m_offsety + m_length * Math.sin(m_angle)) + (-1) * WIDTH_LINE * Math.sin(m_angle+Math.PI/2)));
+		(int) ((m_position.m_x + m_offsetx + m_length * Math.cos(-m_angle)) + (-1) * WIDTH_LINE * Math.cos(-m_angle+Math.PI/2)),
+		(int) ((m_position.m_y + m_offsety + m_length * Math.sin(-m_angle)) + (-1) * WIDTH_LINE * Math.sin(-m_angle+Math.PI/2)));
 
 		Point botRight = new Point (
-		(int) ((m_position.m_x + m_offsetx + m_length * Math.cos(m_angle)) + WIDTH_LINE * Math.cos(m_angle+Math.PI/2)),
-		(int) ((m_position.m_y + m_offsety + m_length * Math.sin(m_angle)) + WIDTH_LINE * Math.sin(m_angle+Math.PI/2)));
+		(int) ((m_position.m_x + m_offsetx + m_length * Math.cos(-m_angle)) + WIDTH_LINE * Math.cos(-m_angle+Math.PI/2)),
+		(int) ((m_position.m_y + m_offsety + m_length * Math.sin(-m_angle)) + WIDTH_LINE * Math.sin(-m_angle+Math.PI/2)));
 
 		Point [] pointsRectangle = new Point [4];
 		pointsRectangle [0] = topLeft;
@@ -59,8 +59,8 @@ public class Line extends Solid {
 		int op_x = p.m_x - (m_position.m_x + m_offsetx);
 		int op_y = p.m_y - (m_position.m_y + m_offsety);
 
-		int u_x = (int)(m_length * Math.cos(m_angle));
-		int u_y = (int)(m_length * Math.sin(m_angle));
+		int u_x = (int)(m_length * Math.cos(-m_angle));
+		int u_y = (int)(m_length * Math.sin(-m_angle));
 
 		double new_l = (op_x * u_x + op_y * u_y) / Math.sqrt(u_x * u_x + u_y * u_y);
 

@@ -233,9 +233,9 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 		if (joint.m_freeSolid.m_joints.size() == 1) {
 			if (joint.m_anchor.m_isGround) {
-				joint.m_freeSolid.m_angle = joint.m_anchor.m_angle - angle;
+				joint.m_freeSolid.m_angle = angle + joint.m_anchor.m_angle;
 			} else {
-				joint.m_freeSolid.m_angle = joint.m_anchor.m_angle + Math.PI - angle;
+				joint.m_freeSolid.m_angle = angle - Math.PI + joint.m_anchor.m_angle;
 			}
 		} else {
 			for (Solid s : m_solids) {
@@ -244,7 +244,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 						int d_x = j.m_position.m_x - s.m_position.m_x;
 						int d_y = j.m_position.m_y - s.m_position.m_y;
 
-						s.m_angle = Math.atan2(d_y, d_x);
+						s.m_angle = Math.atan2(-d_y, d_x);
 						break;
 					}
 				}
@@ -291,7 +291,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 					int d_x = j.m_position.m_x - s.m_position.m_x;
 					int d_y = j.m_position.m_y - s.m_position.m_y;
 
-					s.m_angle = Math.atan2(d_y, d_x);
+					s.m_angle = Math.atan2(-d_y, d_x);
 					break;
 				}
 			}

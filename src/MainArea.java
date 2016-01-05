@@ -118,7 +118,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 		int d_x = p.m_x - m_solidCreationJoint.m_position.m_x;
 		int d_y = p.m_y - m_solidCreationJoint.m_position.m_y;
 
-		Line new_line = new Line(m_solidCreationJoint.m_position, Math.sqrt(d_x * d_x + d_y * d_y), Math.atan2(d_y, d_x));
+		Line new_line = new Line(m_solidCreationJoint.m_position, Math.sqrt(d_x * d_x + d_y * d_y), Math.atan2(-d_y, d_x));
 
 		if (m_solidCreationJoint instanceof Prismatic) {
 			if (d_x > 0) {
