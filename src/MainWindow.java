@@ -23,6 +23,8 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 	public ArrayList<Solid> m_solids;
 	public ArrayList<Joint> m_joints;
 	public HashSet<Constraint> m_tempConstraints;
+	public HashMap<Point, Point> m_tempPos;
+	public boolean m_hasSolution;
 	public Ground m_ground;
 	public final Dimension DIM_INSIDEPROG = new Dimension (300, 400);
 
@@ -80,6 +82,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 		m_jointSliders = new HashMap<JSlider, Joint>();
 		m_joints = new ArrayList<Joint>();
 		m_tempConstraints = new HashSet<Constraint>();
+		m_tempPos = new HashMap<Point, Point>();
 		m_ground = new Ground();
 
 		pack();
@@ -157,6 +160,8 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 	}
 
 	public void setConstraint(Constraint c, Joint j) {
+		m_hasSolution = true;
+		m_tempPos.clear();
 		m_tempConstraints.add(c);
 
 		if (c instanceof Angle && j instanceof Revolute) {
@@ -219,6 +224,13 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 		setConstraint(new Angle(angle), joint);
 		solveConstraints(joint, null);
 
+		if (!m_hasSolution) {
+			for (Map.Entry<Point, Point> entry : m_tempPos.entrySet()) {
+				entry.getKey().m_x = entry.getValue().m_x;
+				entry.getKey().m_y = entry.getValue().m_y;
+			}
+		}
+
 		if (joint.m_freeSolid.m_joints.size() == 1) {
 			if (joint.m_anchor.m_isGround) {
 				joint.m_freeSolid.m_angle = joint.m_anchor.m_angle - angle;
@@ -257,7 +269,12 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			joint.m_freeSolid.m_offsety = (int)(dist * Math.sin(joint.m_freeSolid.m_angle));
 		}
 
-
+		if (!m_hasSolution) {
+			for (Map.Entry<Point, Point> entry : m_tempPos.entrySet()) {
+				entry.getKey().m_x = entry.getValue().m_x;
+				entry.getKey().m_y = entry.getValue().m_y;
+			}
+		}
 
 		for (Solid s : m_solids) {
 			for (Joint j : s.m_joints) {
@@ -322,12 +339,18 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 					System.out.print("... with both from parent ");
 					Point[] new_points = ConstraintSolver.solveDistanceAlignment(pair2.a, pair2.b);
 
-					if (j.m_position.distance(new_points[0]) < j.m_position.distance(new_points[1])) {
-						j.m_position.m_x = new_points[0].m_x;
-						j.m_position.m_y = new_points[0].m_y;
+					if (new_points != null && m_hasSolution) {
+						if (j.m_position.distance(new_points[0]) < j.m_position.distance(new_points[1])) {
+							m_tempPos.put(j.m_position, new Point(j.m_position.m_x, j.m_position.m_y));
+							j.m_position.m_x = new_points[0].m_x;
+							j.m_position.m_y = new_points[0].m_y;
+						} else {
+							m_tempPos.put(j.m_position, new Point(j.m_position.m_x, j.m_position.m_y));
+							j.m_position.m_x = new_points[1].m_x;
+							j.m_position.m_y = new_points[1].m_y;
+						}
 					} else {
-						j.m_position.m_x = new_points[1].m_x;
-						j.m_position.m_y = new_points[1].m_y;
+						m_hasSolution = false;
 					}
 
 					j.m_defined = true;
@@ -361,24 +384,32 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 					Point[] new_points = ConstraintSolver.solveDistanceAlignment(pair2.a, pair2.b);
 
-					double old_angle = j.m_position.angle(pair2.a.m_origin.m_position, pair2.b.m_origin.m_position);
-					double new_angle0 = new_points[0].angle(pair2.a.m_origin.m_position, pair2.b.m_origin.m_position);
-					double new_angle1 = new_points[1].angle(pair2.a.m_origin.m_position, pair2.b.m_origin.m_position);
+					if (new_points != null && m_hasSolution) {
+						double old_angle = j.m_position.angle(pair2.a.m_origin.m_position, pair2.b.m_origin.m_position);
+						double new_angle0 = new_points[0].angle(pair2.a.m_origin.m_position, pair2.b.m_origin.m_position);
+						double new_angle1 = new_points[1].angle(pair2.a.m_origin.m_position, pair2.b.m_origin.m_position);
 
-					if (Math.abs(old_angle - new_angle0) < Math.abs(old_angle - new_angle1)) {
-						j.m_position.m_x = new_points[0].m_x;
-						j.m_position.m_y = new_points[0].m_y;
-					} else if (Math.abs(old_angle - new_angle0) > Math.abs(old_angle - new_angle1)) {
-						j.m_position.m_x = new_points[1].m_x;
-						j.m_position.m_y = new_points[1].m_y;
-					} else {
-						if (j.m_position.distance(new_points[0]) < j.m_position.distance(new_points[1])) {
+						if (Math.abs(old_angle - new_angle0) < Math.abs(old_angle - new_angle1)) {
+							m_tempPos.put(j.m_position, new Point(j.m_position.m_x, j.m_position.m_y));
 							j.m_position.m_x = new_points[0].m_x;
 							j.m_position.m_y = new_points[0].m_y;
-						} else {
+						} else if (Math.abs(old_angle - new_angle0) > Math.abs(old_angle - new_angle1)) {
+							m_tempPos.put(j.m_position, new Point(j.m_position.m_x, j.m_position.m_y));
 							j.m_position.m_x = new_points[1].m_x;
 							j.m_position.m_y = new_points[1].m_y;
+						} else {
+							if (j.m_position.distance(new_points[0]) < j.m_position.distance(new_points[1])) {
+								m_tempPos.put(j.m_position, new Point(j.m_position.m_x, j.m_position.m_y));
+								j.m_position.m_x = new_points[0].m_x;
+								j.m_position.m_y = new_points[0].m_y;
+							} else {
+								m_tempPos.put(j.m_position, new Point(j.m_position.m_x, j.m_position.m_y));
+								j.m_position.m_x = new_points[1].m_x;
+								j.m_position.m_y = new_points[1].m_y;
+							}
 						}
+					} else {
+						m_hasSolution = false;
 					}
 
 					j.m_defined = true;
@@ -397,24 +428,32 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 				Point[] new_points = ConstraintSolver.solveDistanceDistance(pair.a, pair.b);
 
-				double old_angle = j.m_position.angle(pair.a.m_origin.m_position, pair.b.m_origin.m_position);
-				double new_angle0 = new_points[0].angle(pair.a.m_origin.m_position, pair.b.m_origin.m_position);
-				double new_angle1 = new_points[1].angle(pair.a.m_origin.m_position, pair.b.m_origin.m_position);
+				if (new_points != null && m_hasSolution) {
+					double old_angle = j.m_position.angle(pair.a.m_origin.m_position, pair.b.m_origin.m_position);
+					double new_angle0 = new_points[0].angle(pair.a.m_origin.m_position, pair.b.m_origin.m_position);
+					double new_angle1 = new_points[1].angle(pair.a.m_origin.m_position, pair.b.m_origin.m_position);
 
-				if (Math.abs(old_angle - new_angle0) < Math.abs(old_angle - new_angle1)) {
-					j.m_position.m_x = new_points[0].m_x;
-					j.m_position.m_y = new_points[0].m_y;
-				} else if (Math.abs(old_angle - new_angle0) > Math.abs(old_angle - new_angle1)) {
-					j.m_position.m_x = new_points[1].m_x;
-					j.m_position.m_y = new_points[1].m_y;
-				} else {
-					if (j.m_position.distance(new_points[0]) < j.m_position.distance(new_points[1])) {
+					if (Math.abs(old_angle - new_angle0) < Math.abs(old_angle - new_angle1)) {
+						m_tempPos.put(j.m_position, new Point(j.m_position.m_x, j.m_position.m_y));
 						j.m_position.m_x = new_points[0].m_x;
 						j.m_position.m_y = new_points[0].m_y;
-					} else {
+					} else if (Math.abs(old_angle - new_angle0) > Math.abs(old_angle - new_angle1)) {
+						m_tempPos.put(j.m_position, new Point(j.m_position.m_x, j.m_position.m_y));
 						j.m_position.m_x = new_points[1].m_x;
 						j.m_position.m_y = new_points[1].m_y;
+					} else {
+						if (j.m_position.distance(new_points[0]) < j.m_position.distance(new_points[1])) {
+							m_tempPos.put(j.m_position, new Point(j.m_position.m_x, j.m_position.m_y));
+							j.m_position.m_x = new_points[0].m_x;
+							j.m_position.m_y = new_points[0].m_y;
+						} else {
+							m_tempPos.put(j.m_position, new Point(j.m_position.m_x, j.m_position.m_y));
+							j.m_position.m_x = new_points[1].m_x;
+							j.m_position.m_y = new_points[1].m_y;
+						}
 					}
+				} else {
+					m_hasSolution = false;
 				}
 
 				j.m_defined = true;
@@ -431,24 +470,32 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 				solveConstraints(pair.b.m_origin, j);
 				Point[] new_points = ConstraintSolver.solveDistanceDistance(pair.a, pair.b);
 
-				double old_angle = j.m_position.angle(pair.a.m_origin.m_position, pair.b.m_origin.m_position);
-				double new_angle0 = new_points[0].angle(pair.a.m_origin.m_position, pair.b.m_origin.m_position);
-				double new_angle1 = new_points[1].angle(pair.a.m_origin.m_position, pair.b.m_origin.m_position);
+				if (new_points != null && m_hasSolution) {
+					double old_angle = j.m_position.angle(pair.a.m_origin.m_position, pair.b.m_origin.m_position);
+					double new_angle0 = new_points[0].angle(pair.a.m_origin.m_position, pair.b.m_origin.m_position);
+					double new_angle1 = new_points[1].angle(pair.a.m_origin.m_position, pair.b.m_origin.m_position);
 
-				if (Math.abs(old_angle - new_angle0) < Math.abs(old_angle - new_angle1)) {
-					j.m_position.m_x = new_points[0].m_x;
-					j.m_position.m_y = new_points[0].m_y;
-				} else if (Math.abs(old_angle - new_angle0) > Math.abs(old_angle - new_angle1)) {
-					j.m_position.m_x = new_points[1].m_x;
-					j.m_position.m_y = new_points[1].m_y;
-				} else {
-					if (j.m_position.distance(new_points[0]) < j.m_position.distance(new_points[1])) {
+					if (Math.abs(old_angle - new_angle0) < Math.abs(old_angle - new_angle1)) {
+						m_tempPos.put(j.m_position, new Point(j.m_position.m_x, j.m_position.m_y));
 						j.m_position.m_x = new_points[0].m_x;
 						j.m_position.m_y = new_points[0].m_y;
-					} else {
+					} else if (Math.abs(old_angle - new_angle0) > Math.abs(old_angle - new_angle1)) {
+						m_tempPos.put(j.m_position, new Point(j.m_position.m_x, j.m_position.m_y));
 						j.m_position.m_x = new_points[1].m_x;
 						j.m_position.m_y = new_points[1].m_y;
+					} else {
+						if (j.m_position.distance(new_points[0]) < j.m_position.distance(new_points[1])) {
+							m_tempPos.put(j.m_position, new Point(j.m_position.m_x, j.m_position.m_y));
+							j.m_position.m_x = new_points[0].m_x;
+							j.m_position.m_y = new_points[0].m_y;
+						} else {
+							m_tempPos.put(j.m_position, new Point(j.m_position.m_x, j.m_position.m_y));
+							j.m_position.m_x = new_points[1].m_x;
+							j.m_position.m_y = new_points[1].m_y;
+						}
 					}
+				} else {
+					m_hasSolution = false;
 				}
 
 				j.m_defined = true;
@@ -459,24 +506,32 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 				solveConstraints(pair2.b.m_origin, j);
 				Point[] new_points = ConstraintSolver.solveDistanceAlignment(pair2.a, pair2.b);
 
-				double old_angle = j.m_position.angle(pair2.a.m_origin.m_position, pair2.b.m_origin.m_position);
-				double new_angle0 = new_points[0].angle(pair2.a.m_origin.m_position, pair2.b.m_origin.m_position);
-				double new_angle1 = new_points[1].angle(pair2.a.m_origin.m_position, pair2.b.m_origin.m_position);
+				if (new_points != null && m_hasSolution) {
+					double old_angle = j.m_position.angle(pair2.a.m_origin.m_position, pair2.b.m_origin.m_position);
+					double new_angle0 = new_points[0].angle(pair2.a.m_origin.m_position, pair2.b.m_origin.m_position);
+					double new_angle1 = new_points[1].angle(pair2.a.m_origin.m_position, pair2.b.m_origin.m_position);
 
-				if (Math.abs(old_angle - new_angle0) < Math.abs(old_angle - new_angle1)) {
-					j.m_position.m_x = new_points[0].m_x;
-					j.m_position.m_y = new_points[0].m_y;
-				} else if (Math.abs(old_angle - new_angle0) > Math.abs(old_angle - new_angle1)) {
-					j.m_position.m_x = new_points[1].m_x;
-					j.m_position.m_y = new_points[1].m_y;
-				} else {
-					if (j.m_position.distance(new_points[0]) < j.m_position.distance(new_points[1])) {
+					if (Math.abs(old_angle - new_angle0) < Math.abs(old_angle - new_angle1)) {
+						m_tempPos.put(j.m_position, new Point(j.m_position.m_x, j.m_position.m_y));
 						j.m_position.m_x = new_points[0].m_x;
 						j.m_position.m_y = new_points[0].m_y;
-					} else {
+					} else if (Math.abs(old_angle - new_angle0) > Math.abs(old_angle - new_angle1)) {
+						m_tempPos.put(j.m_position, new Point(j.m_position.m_x, j.m_position.m_y));
 						j.m_position.m_x = new_points[1].m_x;
 						j.m_position.m_y = new_points[1].m_y;
+					} else {
+						if (j.m_position.distance(new_points[0]) < j.m_position.distance(new_points[1])) {
+							m_tempPos.put(j.m_position, new Point(j.m_position.m_x, j.m_position.m_y));
+							j.m_position.m_x = new_points[0].m_x;
+							j.m_position.m_y = new_points[0].m_y;
+						} else {
+							m_tempPos.put(j.m_position, new Point(j.m_position.m_x, j.m_position.m_y));
+							j.m_position.m_x = new_points[1].m_x;
+							j.m_position.m_y = new_points[1].m_y;
+						}
 					}
+				} else {
+					m_hasSolution = false;
 				}
 
 				j.m_defined = true;
