@@ -226,7 +226,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 
 				if (m_solidCreationJoint instanceof Prismatic && joint instanceof Revolute) {
 					new_line.m_position = joint.m_position;
-					new_line.m_angle = new_line.m_angle + Math.PI;
+					new_line.m_angle = new_line.m_angle - Math.PI;
 				}
 			}
 
@@ -264,7 +264,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 
 				if (j instanceof Prismatic && joint instanceof Revolute) {
 					solid.m_position = joint.m_position;
-					solid.m_angle = solid.m_angle + Math.PI;
+					solid.m_angle = solid.m_angle - Math.PI;
 				}
 			}
 

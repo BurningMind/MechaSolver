@@ -82,7 +82,7 @@ public class ConstraintSolver {
 
 			double eq_a = 1;
 			double eq_b = -2*b;
-			double eq_c = x1*x1 - 2*x1*a + a*a - e*e;
+			double eq_c = b*b + x1*x1 - 2*x1*a + a*a - e*e;
 
 			double delta = eq_b*eq_b - 4*eq_a*eq_c;
 
