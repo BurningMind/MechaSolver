@@ -9,18 +9,21 @@ public class MainArea extends JPanel implements MouseInputListener {
 		REVOLUTE,
 		PRISMATIC,
 		LINE1,
-		LINE2,
-		SETANGLE
+		LINE2
 	}
 
 	public final double SNAPPING_DISTANCE = 20.0;
 
 	public MainWindow m_mainWindow;
 	public Mode m_mode = Mode.NONE;
+	public boolean m_snap = false;
 
 	private Joint m_solidCreationJoint;
 	private Solid m_tempSolid;
 	private Joint m_tempJoint;
+
+	private Joint m_verticalGuide = null;
+	private Joint m_horizontalGuide = null;
 
 	public MainArea(MainWindow mainWindow) {
 		m_mainWindow = mainWindow;
@@ -46,31 +49,91 @@ public class MainArea extends JPanel implements MouseInputListener {
 		if (m_tempJoint!=null) {
 			m_tempJoint.draw(g);
 		}
+
+		if (m_horizontalGuide != null) {
+			g.drawLine(0, m_horizontalGuide.m_position.m_y, getWidth(), m_horizontalGuide.m_position.m_y);
+		}
+
+		if (m_verticalGuide != null) {
+			g.drawLine(m_verticalGuide.m_position.m_x, 0, m_verticalGuide.m_position.m_x, getHeight());
+		}
 	}
 
-	public Joint getNearbyJoint(Point p) {
+	public Pair<Joint, Point> getNearbyJoint(Point p) {
 		// We check distances until we find a joint within our radius, else we return a null
 		Joint joint = null;
+		Point point = null;
+
+		m_horizontalGuide = null;
+		m_verticalGuide = null;
+
 		for (Joint j : m_mainWindow.m_joints) {
 			if (p.distance(j.m_position) <= SNAPPING_DISTANCE) {
 				joint = j;
+				point = j.m_position;
 				break;
 			}
 		}
 
-		return joint;
+		if (point == null && m_snap) { // TODO: support both snapping methods at the same time
+			int x = p.m_x;
+			int y = p.m_y;
+
+			for (Joint j : m_mainWindow.m_joints) {
+				if (Math.abs(j.m_position.m_x - p.m_x) < SNAPPING_DISTANCE && x == p.m_x) {
+					x = j.m_position.m_x;
+					m_verticalGuide = j;
+				}
+
+				if (Math.abs(j.m_position.m_y - p.m_y) < SNAPPING_DISTANCE && y == p.m_y) {
+					y = j.m_position.m_y;
+					m_horizontalGuide = j;
+				}
+			}
+
+			if (x != p.m_x || y != p.m_y) {
+				point = new Point(x, y);
+			}
+		}
+
+		return new Pair<Joint, Point>(joint, point);
 	}
 
 	public Pair<Solid, Point> getNearbySolidAndPoint(Point p) {
 		// We get a point from a nearby solid onto it
 		Solid solid = null;
 		Point point = null;
+
+		m_horizontalGuide = null;
+		m_verticalGuide = null;
+
 		for (Solid s : m_mainWindow.m_solids) {
 			Point new_p = s.getClosePoint(p, SNAPPING_DISTANCE);
 			if (new_p != null) {
 				solid = s;
 				point = new_p;
 				break;
+			}
+		}
+
+		if (point == null && m_snap) { // TODO: support both snapping methods at the same time
+			int x = p.m_x;
+			int y = p.m_y;
+
+			for (Joint j : m_mainWindow.m_joints) {
+				if (Math.abs(j.m_position.m_x - p.m_x) < SNAPPING_DISTANCE && x == p.m_x) {
+					x = j.m_position.m_x;
+					m_verticalGuide = j;
+				}
+
+				if (Math.abs(j.m_position.m_y - p.m_y) < SNAPPING_DISTANCE && y == p.m_y) {
+					y = j.m_position.m_y;
+					m_horizontalGuide = j;
+				}
+			}
+
+			if (x != p.m_x || y != p.m_y) {
+				point = new Point(x, y);
 			}
 		}
 
@@ -87,6 +150,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 		if (solid == null) {
 			solid = m_mainWindow.m_ground;
 		}
+
 		if (point == null) {
 			point = current_point;
 		}
@@ -105,18 +169,18 @@ public class MainArea extends JPanel implements MouseInputListener {
 	}
 
 	public Pair<Line, Joint> getInCreationLine(Point current_point) {
-		Joint joint = getNearbyJoint(current_point); // Get nearby joint for snapping
+		Pair<Joint, Point> pair = getNearbyJoint(current_point); // Get nearby joint for snapping
 
-		Point p;
-		if (joint == null) { // If we don't snap, create the solid freely
-			p = current_point;
-		} else { // If we snap, set the second point to the joint
-			p = joint.m_position;
+		Joint joint = pair.a;
+		Point point = pair.b;
+
+		if (joint == null && point == null) {
+			point = current_point;
 		}
 
 		// We create the line object between the joint and the new point
-		int d_x = p.m_x - m_solidCreationJoint.m_position.m_x;
-		int d_y = p.m_y - m_solidCreationJoint.m_position.m_y;
+		int d_x = point.m_x - m_solidCreationJoint.m_position.m_x;
+		int d_y = point.m_y - m_solidCreationJoint.m_position.m_y;
 
 		Line new_line = new Line(m_solidCreationJoint.m_position, Math.sqrt(d_x * d_x + d_y * d_y), Math.atan2(-d_y, d_x));
 
@@ -135,13 +199,13 @@ public class MainArea extends JPanel implements MouseInputListener {
 
 	public void mouseClicked(MouseEvent e) {
 		if (m_mode == Mode.LINE1) { // First click when creating a line
-			Joint joint = getNearbyJoint(new Point(e.getX(), e.getY())); // Get nearby joint for snapping
+			Pair<Joint, Point> pair = getNearbyJoint(new Point(e.getX(), e.getY())); // Get nearby joint for snapping
 
-			if (joint == null) { // We can only start a solid on a joint
+			if (pair.a == null) { // We can only start a solid on a joint
 				return;
 			}
 
-			m_solidCreationJoint = joint; // Store the joint for the second click
+			m_solidCreationJoint = pair.a; // Store the joint for the second click
 			m_mode = Mode.LINE2;
 		} else if (m_mode == Mode.LINE2) { // Second click when creating a line
 			Pair<Line, Joint> pair = getInCreationLine(new Point(e.getX(), e.getY()));
@@ -205,30 +269,6 @@ public class MainArea extends JPanel implements MouseInputListener {
 			}
 
 			m_mainWindow.addJoint(joint);
-		} else if (m_mode == Mode.SETANGLE) {
-			Joint joint = getNearbyJoint(new Point(e.getX(), e.getY()));
-
-			if (joint != null) {
-				m_mainWindow.removeConstraints();
-				for (Joint j : m_mainWindow.m_joints) {
-					j.m_defined = j.hasFixedConstraint();
-					j.m_visited = false;
-				}
-				m_mainWindow.setConstraint(new Angle(Math.PI / 4.0), joint);
-				m_mainWindow.solveConstraints(joint, null);
-
-				for (Solid s : m_mainWindow.m_solids) {
-					for (Joint j : s.m_joints) {
-						if (j.m_position != s.m_position) {
-							int d_x = j.m_position.m_x - s.m_position.m_x;
-							int d_y = j.m_position.m_y - s.m_position.m_y;
-
-							s.m_angle = Math.atan2(d_y, d_x);
-							break;
-						}
-					}
-				}
-			}
 		}
 
 		repaint();

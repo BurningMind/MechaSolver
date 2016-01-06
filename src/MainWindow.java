@@ -8,7 +8,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 	JButton m_addRevoluteButton;
 	JButton m_addPrismaticButton;
 	JButton m_addLineButton;
-	JButton m_setAngleButton;
+	JButton m_setSnapping;
 	JButton m_clear;
 	HashMap<JSlider, Joint> m_jointSliders;
 
@@ -70,9 +70,9 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 		m_addLineButton.addActionListener(this);
 		toolBar.add(m_addLineButton);
 
-		m_setAngleButton = new JButton("Set Angle");
-		m_setAngleButton.addActionListener(this);
-		toolBar.add(m_setAngleButton);
+		m_setSnapping = new JButton("Enable/Disable Snapping");
+		m_setSnapping.addActionListener(this);
+		toolBar.add(m_setSnapping);
 
 		m_clear = new JButton ("Clear");
 		m_clear.addActionListener(this);
@@ -136,8 +136,8 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			m_mainArea.m_mode = MainArea.Mode.PRISMATIC;
 		} else if (e.getSource() == m_addLineButton) {
 			m_mainArea.m_mode = MainArea.Mode.LINE1;
-		} else if (e.getSource() == m_setAngleButton) {
-			m_mainArea.m_mode = MainArea.Mode.SETANGLE;
+		} else if (e.getSource() == m_setSnapping) {
+			m_mainArea.m_snap = !m_mainArea.m_snap;
 		} else if (e.getSource() == m_clear) {
 			m_solids.clear();
 			m_joints.clear();

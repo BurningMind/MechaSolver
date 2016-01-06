@@ -24,8 +24,6 @@ public class Revolute extends Joint {
                 g.drawArc(m_position.m_x - 40, m_position.m_y - 40, 80, 80, (int)Math.toDegrees(m_anchor.m_angle), (int)Math.toDegrees(angle));
             } else {
                 angle = m_freeSolid.m_angle - (m_anchor.m_angle - Math.PI);
-                System.out.println(Math.toDegrees(m_freeSolid.m_angle));
-                System.out.println(Math.toDegrees(m_anchor.m_angle));
                 g.drawArc(m_position.m_x - 40, m_position.m_y - 40, 80, 80, (int)Math.toDegrees(m_anchor.m_angle - Math.PI), (int)Math.toDegrees(angle));
             }
 
