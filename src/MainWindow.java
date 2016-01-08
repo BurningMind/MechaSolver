@@ -10,7 +10,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 	JButton m_addLineButton;
 	JButton m_setSnapping;
 	JButton m_clear;
-	HashMap<JSlider, Joint> m_jointSliders;
+
 
 	JLabel m_dispSolids;
 
@@ -22,6 +22,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 	public ArrayList<Solid> m_solids;
 	public ArrayList<Joint> m_joints;
+	public ArrayList<MySlider> m_sliders;
 	public HashSet<Constraint> m_tempConstraints;
 	public HashMap<Point, Point> m_tempPos;
 	public boolean m_hasSolution;
@@ -79,7 +80,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 		toolBar.add(m_clear);
 
 		m_solids = new ArrayList<Solid>();
-		m_jointSliders = new HashMap<JSlider, Joint>();
+		m_sliders = new ArrayList<MySlider>();
 		m_joints = new ArrayList<Joint>();
 		m_tempConstraints = new HashSet<Constraint>();
 		m_tempPos = new HashMap<Point, Point>();
@@ -92,6 +93,15 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 	public void addSolid (Solid solid) {
 		m_solids.add(solid);
+
+		for (Joint j : solid.m_joints) {
+			if (j.m_position == solid.m_position) {
+				int angle = (int) Math.toDegrees ( j.m_freeSolid.m_angle - j.m_anchor.m_angle);
+				System.out.println(angle);
+				m_sliders.get(j.m_id).setValue(angle);
+				break;
+			}
+		}
 	}
 
 	public void addJoint (Joint joint) {
@@ -104,13 +114,14 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 		jointPanel.add(new JLabel("Joint " + m_joints.size()));
 
-		JSlider slider = new JSlider(JSlider.HORIZONTAL, 0, 360, 0);
+		MySlider slider = new MySlider(MySlider.HORIZONTAL, 0, 360, 0, m_sliders.size());
 
 		slider.addChangeListener(this);
 
 		jointPanel.add(slider);
 
-		m_jointSliders.put(slider, joint);
+		m_joints.add(joint);
+		m_sliders.add(slider);
 
 		m_infoIP.add(jointPanel);
 		m_infoIP.revalidate();
@@ -118,12 +129,12 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 	}
 
 	public void stateChanged(ChangeEvent e) {
-		JSlider slider = (JSlider)e.getSource();
+		MySlider slider = (MySlider)e.getSource();
 
-		if (m_jointSliders.get(slider) instanceof Revolute) {
-			setJointAngle(m_jointSliders.get(slider), Math.toRadians(slider.getValue()));
-		} else if (m_jointSliders.get(slider) instanceof Prismatic) {
-			setJointDistance(m_jointSliders.get(slider), slider.getValue());
+		if (m_joints.get(slider.m_id) instanceof Revolute) {
+			setJointAngle(m_joints.get(slider.m_id), Math.toRadians(slider.getValue()));
+		} else if (m_joints.get(slider.m_id) instanceof Prismatic) {
+			setJointDistance(m_joints.get(slider.m_id), slider.getValue());
 		}
 
 		repaint();
@@ -143,7 +154,9 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			m_joints.clear();
 			m_mainArea.repaint();
 			m_infoIP.removeAll();
-			m_jointSliders.clear();
+
+			m_sliders.clear();
+			m_joints.clear();
 			repaint();
 			m_mainArea.m_mode = MainArea.Mode.NONE;
 		}
@@ -202,7 +215,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 				int y = pair2.b.m_origin.m_position.m_y + (int)(Math.sin(angle) * pair2.a.m_dist);
 
 				if (!pair2.a.m_origin.hasFixedConstraint()) {
-					Constraint c1 = new Alignment(new Prismatic(null, null, new Point(x, y), "temp"), pair2.b.m_direction);				m_tempConstraints.add(c1);
+					Constraint c1 = new Alignment(new Prismatic(null, null, new Point(x, y), -42), pair2.b.m_direction);				m_tempConstraints.add(c1);
 					pair2.a.m_origin.m_constraints.add(c1);
 				}
 
@@ -299,7 +312,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 	}
 
 	public void solveConstraints(Joint j, Joint parent) {
-		System.out.print("Joint " + j.m_name + ": ");
+		System.out.print("Joint " + j.m_id + ": ");
 
 		if (j.m_visited) {
 			return;

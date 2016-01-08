@@ -158,9 +158,9 @@ public class MainArea extends JPanel implements MouseInputListener {
 		// We create the joint
 		Joint joint;
 		if (m_mode == Mode.REVOLUTE) {
-			joint = new Revolute(solid, null, point, String.valueOf(m_mainWindow.m_joints.size()));
+			joint = new Revolute(solid, null, point, m_mainWindow.m_joints.size());
 		} else if (m_mode == Mode.PRISMATIC) {
-			joint = new Prismatic(solid, null, point, String.valueOf(m_mainWindow.m_joints.size()));
+			joint = new Prismatic(solid, null, point, m_mainWindow.m_joints.size());
 		} else {
 			return null;
 		}
@@ -232,10 +232,9 @@ public class MainArea extends JPanel implements MouseInputListener {
 
 			new_line.m_joints.add(m_solidCreationJoint);
 
-			m_mainWindow.addSolid(new_line);
-
 			// We add the line to the initial joint
 			m_solidCreationJoint.m_freeSolid = new_line;
+			m_mainWindow.addSolid(new_line);
 
 			m_mode = Mode.LINE1;
 		} else if (m_mode == Mode.REVOLUTE || m_mode == Mode.PRISMATIC) { // We create a joint

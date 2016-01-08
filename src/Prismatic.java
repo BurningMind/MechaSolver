@@ -1,8 +1,8 @@
 import java.awt.*;
 
 public class Prismatic extends Joint {
-    public Prismatic(Solid anchor, Solid freeSolid, Point position, String name) {
-        super(anchor, freeSolid, position, name);
+    public Prismatic(Solid anchor, Solid freeSolid, Point position, int id) {
+        super(anchor, freeSolid, position, id);
     }
 
     public void draw(Graphics g) {
