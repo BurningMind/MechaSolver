@@ -96,9 +96,14 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 		for (Joint j : solid.m_joints) {
 			if (j.m_position == solid.m_position) {
-				int angle = (int) Math.toDegrees ( j.m_freeSolid.m_angle - j.m_anchor.m_angle);
-				System.out.println(angle);
-				m_sliders.get(j.m_id).setValue(angle);
+				double angleInRad = 0.0;
+				if (j.m_anchor.m_isGround) {
+	                angleInRad = (j.m_freeSolid.m_angle - j.m_anchor.m_angle);
+	            } else {
+	                angleInRad = (j.m_freeSolid.m_angle - (j.m_anchor.m_angle - Math.PI));
+	            }
+				System.out.println((int)Math.toDegrees(angleInRad));
+				m_sliders.get(j.m_id).setValue((int)Math.toDegrees(angleInRad));
 				break;
 			}
 		}
@@ -120,7 +125,6 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 		jointPanel.add(slider);
 
-		m_joints.add(joint);
 		m_sliders.add(slider);
 
 		m_infoIP.add(jointPanel);
