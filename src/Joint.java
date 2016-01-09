@@ -7,18 +7,19 @@ abstract public class Joint {
     public Solid m_freeSolid;
     public HashSet<Constraint> m_constraints;
     public Point m_position;
-    public String m_name;
+
+    public int m_id=0;
 
     public boolean m_defined = false;
     public boolean m_visited = false;
 
     //Constructor
-    public Joint(Solid anchor, Solid freeSolid, Point position, String name) {
+    public Joint(Solid anchor, Solid freeSolid, Point position, int id) {
         m_anchor = anchor;
         m_freeSolid = freeSolid;
         m_position = position;
-        m_name = name;
         m_constraints = new HashSet<Constraint>();
+        m_id = id;
     }
 
     abstract public void draw(Graphics g);
