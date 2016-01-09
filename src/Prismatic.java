@@ -1,6 +1,8 @@
 import java.awt.*;
 
 public class Prismatic extends Joint {
+
+    //Constructor
     public Prismatic(Solid anchor, Solid freeSolid, Point position, int id) {
         super(anchor, freeSolid, position, id);
     }

@@ -1,8 +1,8 @@
 import javax.swing.*;
+import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
-import javax.swing.event.*;
 
 public class MainWindow extends JFrame implements ActionListener, ChangeListener {
 	JButton m_addRevoluteButton;
@@ -10,7 +10,6 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 	JButton m_addLineButton;
 	JButton m_setSnapping;
 	JButton m_clear;
-
 
 	JLabel m_dispSolids;
 
@@ -120,11 +119,9 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 		jointPanel.add(new JLabel("Joint " + m_joints.size()));
 
 		MySlider slider = new MySlider(MySlider.HORIZONTAL, 0, 360, 0, m_sliders.size());
-
 		slider.addChangeListener(this);
 
 		jointPanel.add(slider);
-
 		m_sliders.add(slider);
 
 		m_infoIP.add(jointPanel);
@@ -158,7 +155,6 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			m_joints.clear();
 			m_mainArea.repaint();
 			m_infoIP.removeAll();
-
 			m_sliders.clear();
 			m_joints.clear();
 			repaint();
@@ -172,7 +168,6 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 				j.m_constraints.remove(c);
 			}
 		}
-
 		m_tempConstraints.clear();
 	}
 
@@ -189,7 +184,6 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 					m_tempConstraints.add(c1);
 					d.m_origin.m_constraints.add(c1);
 				}
-
 				return;
 			}
 
@@ -208,7 +202,6 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 					m_tempConstraints.add(c2);
 					pair.b.m_origin.m_constraints.add(c2);
 				}
-
 				return;
 			}
 
@@ -222,7 +215,6 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 					Constraint c1 = new Alignment(new Prismatic(null, null, new Point(x, y), -42), pair2.b.m_direction);				m_tempConstraints.add(c1);
 					pair2.a.m_origin.m_constraints.add(c1);
 				}
-
 				return;
 			}
 		} else if (c instanceof Distance && ((Distance)c).m_origin instanceof Prismatic) {
@@ -338,7 +330,6 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			}
 
 			System.out.println(" done fixed");
-
 			return;
 		}
 

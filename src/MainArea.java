@@ -25,6 +25,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 	private Joint m_verticalGuide = null;
 	private Joint m_horizontalGuide = null;
 
+	//Constructor
 	public MainArea(MainWindow mainWindow) {
 		m_mainWindow = mainWindow;
 		addMouseListener(this);

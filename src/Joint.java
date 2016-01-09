@@ -39,7 +39,6 @@ abstract public class Joint {
                 return true;
             }
         }
-
         return false;
     }
 
@@ -57,11 +56,9 @@ abstract public class Joint {
                 if (((Distance)c).m_origin == except || ((Distance)c).m_origin == this) {
                     continue;
                 }
-
                 return (Distance)c;
             }
         }
-
         return null;
     }
 
@@ -79,11 +76,9 @@ abstract public class Joint {
                 if (((Alignment)c).m_origin == except || ((Alignment)c).m_origin == this) {
                     continue;
                 }
-
                 return (Alignment)c;
             }
         }
-
         return null;
     }
 
@@ -102,7 +97,6 @@ abstract public class Joint {
                     } else {
                         break;
                     }
-
                     counter++;
                 }
             }
@@ -121,7 +115,6 @@ abstract public class Joint {
                 } else {
                     break;
                 }
-
                 counter++;
             }
         }

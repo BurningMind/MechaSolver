@@ -61,6 +61,7 @@ public class ConstraintSolver {
 		double y1;
 		double x2;
 		double y2;
+		
 		if (b != d) {
 			double alpha = (c - a)/(b - d);
 			double beta = (-(a*a) + c*c - b*b + d*d + e*e - f*f) / (-2*(b - d));
