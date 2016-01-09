@@ -165,7 +165,9 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 		m_tempConstraints.add(c);
 
 		if (c instanceof Angle && j instanceof Revolute) {
-			if (j.hasFixedConstraint()) {
+			j.m_constraints.add(c);
+
+			/*if (j.hasFixedConstraint()) {
 				Distance d = j.hasDistanceConstraint(null, null);
 				if (d != null) {
 					Constraint c1 = new Alignment(j, new Vector(j.m_position, new Point(j.m_position.m_x + (int)(d.m_dist * Math.cos(-((Angle)c).m_angle)), j.m_position.m_y + (int)(d.m_dist * Math.sin(-((Angle)c).m_angle)))));
@@ -174,7 +176,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 				}
 
 				return;
-			}
+			}*/
 
 			Pair<Distance, Distance> pair = j.hasTwoDistanceConstraints(null, null);
 			if (pair != null) {
@@ -327,13 +329,41 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 		Pair<Distance, Distance> pair;
 		Pair<Distance, Alignment> pair2;
+		Pair<Distance, Angle> pair3;
 
 		if (parent != null && parent.m_defined) {
 			System.out.print("... with parent defined ");
 			pair = j.hasTwoDistanceConstraints(null, parent);
 			pair2 = j.hasOneDistanceAndOneAlignmentConstraints(null, parent);
+			pair3 = j.hasOneDistanceAndLinkedAngle(null, parent);
 
-			if (pair2 != null) {
+			if (pair3 != null) {
+				System.out.print("... with dist angle ");
+				Point new_point = ConstraintSolver.solveDistanceAngle(pair3.a, pair3.b);
+
+				j.m_position.m_x = new_point.m_x;
+				j.m_position.m_y = new_point.m_y;
+
+				j.m_defined = true;
+
+				for (Constraint c : j.m_constraints) {
+					if (c instanceof Distance) {
+						if (((Distance)c).m_origin == parent) {
+							continue;
+						}
+
+						System.out.print("dist");
+						solveConstraints(((Distance)c).m_origin, j);
+					} else if (c instanceof Alignment) {
+						if (((Alignment)c).m_origin == parent) {
+							continue;
+						}
+
+						System.out.print("align");
+						solveConstraints(((Alignment)c).m_origin, j);
+					}
+				}
+			} else if (pair2 != null) {
 				System.out.print("... with dist align ");
 				if (pair2.a.m_origin == parent && pair2.b.m_origin == parent) {
 					System.out.print("... with both from parent ");
@@ -463,6 +493,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			System.out.print("... with parent not defined ");
 			pair = j.hasTwoDistanceConstraints(parent, null);
 			pair2 = j.hasOneDistanceAndOneAlignmentConstraints(parent, null);
+			pair3 = null;
 
 			if (pair != null) {
 				System.out.println("... with dist dist ");

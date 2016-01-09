@@ -42,6 +42,36 @@ abstract public class Joint {
         return false;
     }
 
+    public Pair<Distance, Angle> hasOneDistanceAndLinkedAngle(Joint except, Joint priority) {
+        for (Constraint c : m_constraints) {
+            if (c instanceof Distance) {
+                if (((Distance)c).m_origin == priority) {
+                    for (Constraint c2 : ((Distance)c).m_origin.m_constraints) {
+                        if (c2 instanceof Angle) {
+                            return new Pair<Distance, Angle>((Distance)c, (Angle)c2);
+                        }
+                    }
+                }
+            }
+        }
+
+        for (Constraint c : m_constraints) {
+            if (c instanceof Distance) {
+                if (((Distance)c).m_origin == except || ((Distance)c).m_origin == this) {
+                    continue;
+                }
+
+                for (Constraint c2 : ((Distance)c).m_origin.m_constraints) {
+                    if (c2 instanceof Angle) {
+                        return new Pair<Distance, Angle>((Distance)c, (Angle)c2);
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
     public Distance hasDistanceConstraint(Joint except, Joint priority) {
         for (Constraint c : m_constraints) {
             if (c instanceof Distance) {
