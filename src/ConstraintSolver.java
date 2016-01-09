@@ -41,6 +41,17 @@ public class ConstraintSolver {
 		return solutions;
 	}
 
+	public static Point solveDistanceAngle(Distance distance, Angle angle) {
+		double angle_value = 0.0;
+		if (distance.m_origin.m_anchor.m_isGround) {
+			angle_value = -angle.m_angle;
+		} else {
+			angle_value = angle.m_angle;
+		}
+
+		return new Point(distance.m_origin.m_position.m_x + (int)(distance.m_dist * Math.cos(angle_value)), distance.m_origin.m_position.m_y + (int)(distance.m_dist * Math.sin(angle_value)));
+	}
+
 	public static Point[] solveDistanceDistance(Distance distance1, Distance distance2) {
 		Point[] solutions = new Point[2];
 
