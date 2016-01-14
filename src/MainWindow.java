@@ -22,9 +22,11 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 	public ArrayList<Solid> m_solids;
 	public ArrayList<Joint> m_joints;
 	public ArrayList<MySlider> m_sliders;
+
 	public HashSet<Constraint> m_tempConstraints;
 	public HashMap<Point, Point> m_tempPos;
 	public boolean m_hasSolution;
+	public boolean settingValue;
 	public Ground m_ground;
 	public final Dimension DIM_INSIDEPROG = new Dimension (300, 400);
 
@@ -102,7 +104,9 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 	                angleInRad = (j.m_freeSolid.m_angle - (j.m_anchor.m_angle - Math.PI));
 	            }
 				System.out.println((int)Math.toDegrees(angleInRad));
+				settingValue = true;
 				m_sliders.get(j.m_id).setValue((int)Math.toDegrees(angleInRad));
+				settingValue = false;
 				break;
 			}
 		}
@@ -132,13 +136,29 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 	public void stateChanged(ChangeEvent e) {
 		MySlider slider = (MySlider)e.getSource();
 
-		if (m_joints.get(slider.m_id) instanceof Revolute) {
-			setJointAngle(m_joints.get(slider.m_id), Math.toRadians(slider.getValue()));
-		} else if (m_joints.get(slider.m_id) instanceof Prismatic) {
-			setJointDistance(m_joints.get(slider.m_id), slider.getValue());
-		}
+		if (!settingValue) {
+			if (m_joints.get(slider.m_id) instanceof Revolute) {
+				setJointAngle(m_joints.get(slider.m_id), Math.toRadians(slider.getValue()));
+			} else if (m_joints.get(slider.m_id) instanceof Prismatic) {
+				setJointDistance(m_joints.get(slider.m_id), slider.getValue());
+			}
 
-		repaint();
+			for (MySlider s : m_sliders) {
+				if (s != slider) {
+					Joint joint = m_joints.get(s.m_id);
+					double angleInRad = 0.0;
+					if (joint.m_anchor.m_isGround) {
+						angleInRad = (joint.m_freeSolid.m_angle - joint.m_anchor.m_angle);
+					} else {
+						angleInRad = (joint.m_freeSolid.m_angle - (joint.m_anchor.m_angle - Math.PI));
+					}
+					settingValue = true;
+					s.setValue((int)Math.toDegrees(angleInRad));
+					settingValue = false;
+				}
+			}
+			repaint();
+		}
 	}
 
 	public void actionPerformed(ActionEvent e) {
@@ -349,6 +369,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 				System.out.print("... with dist angle ");
 				Point new_point = ConstraintSolver.solveDistanceAngle(pair3.a, pair3.b);
 
+				m_tempPos.put(j.m_position, new Point(j.m_position.m_x, j.m_position.m_y));
 				j.m_position.m_x = new_point.m_x;
 				j.m_position.m_y = new_point.m_y;
 
