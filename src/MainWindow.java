@@ -1,8 +1,8 @@
 import javax.swing.*;
+import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
-import javax.swing.event.*;
 
 public class MainWindow extends JFrame implements ActionListener, ChangeListener {
 	JButton m_addRevoluteButton;
@@ -10,7 +10,6 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 	JButton m_addLineButton;
 	JButton m_setSnapping;
 	JButton m_clear;
-	HashMap<JSlider, Joint> m_jointSliders;
 
 	JLabel m_dispSolids;
 
@@ -22,9 +21,12 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 	public ArrayList<Solid> m_solids;
 	public ArrayList<Joint> m_joints;
+	public ArrayList<MySlider> m_sliders;
+
 	public HashSet<Constraint> m_tempConstraints;
 	public HashMap<Point, Point> m_tempPos;
 	public boolean m_hasSolution;
+	public boolean settingValue;
 	public Ground m_ground;
 	public final Dimension DIM_INSIDEPROG = new Dimension (300, 400);
 
@@ -79,7 +81,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 		toolBar.add(m_clear);
 
 		m_solids = new ArrayList<Solid>();
-		m_jointSliders = new HashMap<JSlider, Joint>();
+		m_sliders = new ArrayList<MySlider>();
 		m_joints = new ArrayList<Joint>();
 		m_tempConstraints = new HashSet<Constraint>();
 		m_tempPos = new HashMap<Point, Point>();
@@ -92,6 +94,22 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 	public void addSolid (Solid solid) {
 		m_solids.add(solid);
+
+		for (Joint j : solid.m_joints) {
+			if (j.m_position == solid.m_position) {
+				double angleInRad = 0.0;
+				if (j.m_anchor.m_isGround) {
+	                angleInRad = (j.m_freeSolid.m_angle - j.m_anchor.m_angle);
+	            } else {
+	                angleInRad = (j.m_freeSolid.m_angle - (j.m_anchor.m_angle - Math.PI));
+	            }
+				System.out.println((int)Math.toDegrees(angleInRad));
+				settingValue = true;
+				m_sliders.get(j.m_id).setValue((int)Math.toDegrees(angleInRad));
+				settingValue = false;
+				break;
+			}
+		}
 	}
 
 	public void addJoint (Joint joint) {
@@ -104,13 +122,11 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 		jointPanel.add(new JLabel("Joint " + m_joints.size()));
 
-		JSlider slider = new JSlider(JSlider.HORIZONTAL, 0, 360, 0);
-
+		MySlider slider = new MySlider(MySlider.HORIZONTAL, 0, 360, 0, m_sliders.size());
 		slider.addChangeListener(this);
 
 		jointPanel.add(slider);
-
-		m_jointSliders.put(slider, joint);
+		m_sliders.add(slider);
 
 		m_infoIP.add(jointPanel);
 		m_infoIP.revalidate();
@@ -118,15 +134,31 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 	}
 
 	public void stateChanged(ChangeEvent e) {
-		JSlider slider = (JSlider)e.getSource();
+		MySlider slider = (MySlider)e.getSource();
 
-		if (m_jointSliders.get(slider) instanceof Revolute) {
-			setJointAngle(m_jointSliders.get(slider), Math.toRadians(slider.getValue()));
-		} else if (m_jointSliders.get(slider) instanceof Prismatic) {
-			setJointDistance(m_jointSliders.get(slider), slider.getValue());
+		if (!settingValue) {
+			if (m_joints.get(slider.m_id) instanceof Revolute) {
+				setJointAngle(m_joints.get(slider.m_id), Math.toRadians(slider.getValue()));
+			} else if (m_joints.get(slider.m_id) instanceof Prismatic) {
+				setJointDistance(m_joints.get(slider.m_id), slider.getValue());
+			}
+
+			for (MySlider s : m_sliders) {
+				if (s != slider) {
+					Joint joint = m_joints.get(s.m_id);
+					double angleInRad = 0.0;
+					if (joint.m_anchor.m_isGround) {
+						angleInRad = (joint.m_freeSolid.m_angle - joint.m_anchor.m_angle);
+					} else {
+						angleInRad = (joint.m_freeSolid.m_angle - (joint.m_anchor.m_angle - Math.PI));
+					}
+					settingValue = true;
+					s.setValue((int)Math.toDegrees(angleInRad));
+					settingValue = false;
+				}
+			}
+			repaint();
 		}
-
-		repaint();
 	}
 
 	public void actionPerformed(ActionEvent e) {
@@ -143,7 +175,8 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			m_joints.clear();
 			m_mainArea.repaint();
 			m_infoIP.removeAll();
-			m_jointSliders.clear();
+			m_sliders.clear();
+			m_joints.clear();
 			repaint();
 			m_mainArea.m_mode = MainArea.Mode.NONE;
 		}
@@ -155,7 +188,6 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 				j.m_constraints.remove(c);
 			}
 		}
-
 		m_tempConstraints.clear();
 	}
 
@@ -165,16 +197,17 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 		m_tempConstraints.add(c);
 
 		if (c instanceof Angle && j instanceof Revolute) {
-			if (j.hasFixedConstraint()) {
+			j.m_constraints.add(c);
+
+			/*if (j.hasFixedConstraint()) {
 				Distance d = j.hasDistanceConstraint(null, null);
 				if (d != null) {
 					Constraint c1 = new Alignment(j, new Vector(j.m_position, new Point(j.m_position.m_x + (int)(d.m_dist * Math.cos(-((Angle)c).m_angle)), j.m_position.m_y + (int)(d.m_dist * Math.sin(-((Angle)c).m_angle)))));
 					m_tempConstraints.add(c1);
 					d.m_origin.m_constraints.add(c1);
 				}
-
 				return;
-			}
+			}*/
 
 			Pair<Distance, Distance> pair = j.hasTwoDistanceConstraints(null, null);
 			if (pair != null) {
@@ -191,7 +224,6 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 					m_tempConstraints.add(c2);
 					pair.b.m_origin.m_constraints.add(c2);
 				}
-
 				return;
 			}
 
@@ -202,10 +234,9 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 				int y = pair2.b.m_origin.m_position.m_y + (int)(Math.sin(angle) * pair2.a.m_dist);
 
 				if (!pair2.a.m_origin.hasFixedConstraint()) {
-					Constraint c1 = new Alignment(new Prismatic(null, null, new Point(x, y), "temp"), pair2.b.m_direction);				m_tempConstraints.add(c1);
+					Constraint c1 = new Alignment(new Prismatic(null, null, new Point(x, y), -42), pair2.b.m_direction);				m_tempConstraints.add(c1);
 					pair2.a.m_origin.m_constraints.add(c1);
 				}
-
 				return;
 			}
 		} else if (c instanceof Distance && ((Distance)c).m_origin instanceof Prismatic) {
@@ -299,7 +330,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 	}
 
 	public void solveConstraints(Joint j, Joint parent) {
-		System.out.print("Joint " + j.m_name + ": ");
+		System.out.print("Joint " + j.m_id + ": ");
 
 		if (j.m_visited) {
 			return;
@@ -321,19 +352,47 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			}
 
 			System.out.println(" done fixed");
-
 			return;
 		}
 
 		Pair<Distance, Distance> pair;
 		Pair<Distance, Alignment> pair2;
+		Pair<Distance, Angle> pair3;
 
 		if (parent != null && parent.m_defined) {
 			System.out.print("... with parent defined ");
 			pair = j.hasTwoDistanceConstraints(null, parent);
 			pair2 = j.hasOneDistanceAndOneAlignmentConstraints(null, parent);
+			pair3 = j.hasOneDistanceAndLinkedAngle(null, parent);
 
-			if (pair2 != null) {
+			if (pair3 != null) {
+				System.out.print("... with dist angle ");
+				Point new_point = ConstraintSolver.solveDistanceAngle(pair3.a, pair3.b);
+
+				m_tempPos.put(j.m_position, new Point(j.m_position.m_x, j.m_position.m_y));
+				j.m_position.m_x = new_point.m_x;
+				j.m_position.m_y = new_point.m_y;
+
+				j.m_defined = true;
+
+				for (Constraint c : j.m_constraints) {
+					if (c instanceof Distance) {
+						if (((Distance)c).m_origin == parent) {
+							continue;
+						}
+
+						System.out.print("dist");
+						solveConstraints(((Distance)c).m_origin, j);
+					} else if (c instanceof Alignment) {
+						if (((Alignment)c).m_origin == parent) {
+							continue;
+						}
+
+						System.out.print("align");
+						solveConstraints(((Alignment)c).m_origin, j);
+					}
+				}
+			} else if (pair2 != null) {
 				System.out.print("... with dist align ");
 				if (pair2.a.m_origin == parent && pair2.b.m_origin == parent) {
 					System.out.print("... with both from parent ");
@@ -463,6 +522,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			System.out.print("... with parent not defined ");
 			pair = j.hasTwoDistanceConstraints(parent, null);
 			pair2 = j.hasOneDistanceAndOneAlignmentConstraints(parent, null);
+			pair3 = null;
 
 			if (pair != null) {
 				System.out.println("... with dist dist ");

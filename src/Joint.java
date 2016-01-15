@@ -7,18 +7,19 @@ abstract public class Joint {
     public Solid m_freeSolid;
     public HashSet<Constraint> m_constraints;
     public Point m_position;
-    public String m_name;
+
+    public int m_id=0;
 
     public boolean m_defined = false;
     public boolean m_visited = false;
 
     //Constructor
-    public Joint(Solid anchor, Solid freeSolid, Point position, String name) {
+    public Joint(Solid anchor, Solid freeSolid, Point position, int id) {
         m_anchor = anchor;
         m_freeSolid = freeSolid;
         m_position = position;
-        m_name = name;
         m_constraints = new HashSet<Constraint>();
+        m_id = id;
     }
 
     abstract public void draw(Graphics g);
@@ -38,8 +39,37 @@ abstract public class Joint {
                 return true;
             }
         }
-
         return false;
+    }
+
+    public Pair<Distance, Angle> hasOneDistanceAndLinkedAngle(Joint except, Joint priority) {
+        for (Constraint c : m_constraints) {
+            if (c instanceof Distance) {
+                if (((Distance)c).m_origin == priority) {
+                    for (Constraint c2 : ((Distance)c).m_origin.m_constraints) {
+                        if (c2 instanceof Angle) {
+                            return new Pair<Distance, Angle>((Distance)c, (Angle)c2);
+                        }
+                    }
+                }
+            }
+        }
+
+        for (Constraint c : m_constraints) {
+            if (c instanceof Distance) {
+                if (((Distance)c).m_origin == except || ((Distance)c).m_origin == this) {
+                    continue;
+                }
+
+                for (Constraint c2 : ((Distance)c).m_origin.m_constraints) {
+                    if (c2 instanceof Angle) {
+                        return new Pair<Distance, Angle>((Distance)c, (Angle)c2);
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     public Distance hasDistanceConstraint(Joint except, Joint priority) {
@@ -56,11 +86,9 @@ abstract public class Joint {
                 if (((Distance)c).m_origin == except || ((Distance)c).m_origin == this) {
                     continue;
                 }
-
                 return (Distance)c;
             }
         }
-
         return null;
     }
 
@@ -78,11 +106,9 @@ abstract public class Joint {
                 if (((Alignment)c).m_origin == except || ((Alignment)c).m_origin == this) {
                     continue;
                 }
-
                 return (Alignment)c;
             }
         }
-
         return null;
     }
 
@@ -101,7 +127,6 @@ abstract public class Joint {
                     } else {
                         break;
                     }
-
                     counter++;
                 }
             }
@@ -120,7 +145,6 @@ abstract public class Joint {
                 } else {
                     break;
                 }
-
                 counter++;
             }
         }
