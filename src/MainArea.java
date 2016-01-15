@@ -16,7 +16,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 
 	public MainWindow m_mainWindow;
 	public Mode m_mode = Mode.NONE;
-	public boolean m_snap = false;
+	public boolean m_snap = true;
 
 	private Joint m_solidCreationJoint;
 	private Solid m_tempSolid;
