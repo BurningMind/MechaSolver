@@ -8,6 +8,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 	JButton m_addRevoluteButton;
 	JButton m_addPrismaticButton;
 	JButton m_addLineButton;
+	JButton m_addEngineButton;
 	JButton m_setSnapping;
 	JButton m_clear;
 
@@ -74,6 +75,10 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 		m_addLineButton = new JButton("Add Line");
 		m_addLineButton.addActionListener(this);
 		toolBar.add(m_addLineButton);
+
+		m_addEngineButton = new JButton("Add Engine");
+		m_addEngineButton.addActionListener(this);
+		toolBar.add(m_addEngineButton);
 
 		m_setSnapping = new JButton("Enable/Disable Snapping");
 		m_setSnapping.addActionListener(this);
@@ -196,7 +201,10 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			m_mainArea.m_mode = MainArea.Mode.PRISMATIC;
 		} else if (e.getSource() == m_addLineButton) {
 			m_mainArea.m_mode = MainArea.Mode.LINE1;
-		} else if (e.getSource() == m_setSnapping) {
+		} else if (e.getSource() == m_addEngineButton) {
+			m_mainArea.m_mode = MainArea.Mode.ENGINE;
+			System.out.println("Engine mode");
+		}else if (e.getSource() == m_setSnapping) {
 			m_mainArea.m_snap = !m_mainArea.m_snap;
 		} else if (e.getSource() == m_clear) {
 			m_solids.clear();

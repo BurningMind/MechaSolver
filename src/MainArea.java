@@ -9,7 +9,8 @@ public class MainArea extends JPanel implements MouseInputListener {
 		REVOLUTE,
 		PRISMATIC,
 		LINE1,
-		LINE2
+		LINE2,
+		ENGINE
 	}
 
 	public final double SNAPPING_DISTANCE = 20.0;
@@ -269,6 +270,17 @@ public class MainArea extends JPanel implements MouseInputListener {
 			}
 
 			m_mainWindow.addJoint(joint);
+		} else if ( m_mode == Mode.ENGINE ) {
+			Pair<Joint, Point> pair = getNearbyJoint(new Point(e.getX(), e.getY()));
+			System.out.println("Joint found");
+
+			if (pair.a == null) {
+				return;
+			}
+
+			Moteur engine = new Moteur (pair.a, 90, m_mainWindow);
+			System.out.println("Added an engine to a joint");
+;
 		}
 
 		repaint();
