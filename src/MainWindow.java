@@ -294,7 +294,8 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 			Pair<Distance, Alignment> pair2 = j.hasOneDistanceAndOneAlignmentConstraints(null, null);
 			if (pair2 != null) {
-				double angle =(Math.atan2(pair2.b.m_direction.getY(), pair2.b.m_direction.getX())+Math.PI * 2) % (Math.PI*2) + ((Angle)c).m_angle;
+				double angle =(Math.atan2(pair2.b.m_direction.m_y, pair2.b.m_direction.m_x) + ((Angle)c).m_angle + Math.PI * 2) % (Math.PI*2);
+				System.out.println(angle);
 				int x = pair2.b.m_origin.m_position.m_x + (int)(Math.cos(angle) * pair2.a.m_dist);
 				int y = pair2.b.m_origin.m_position.m_y + (int)(Math.sin(angle) * pair2.a.m_dist);
 
@@ -329,13 +330,17 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 		if (joint.m_freeSolid.m_joints.size() == 1) {
 			if (joint.m_anchor.m_isGround) {
-				joint.m_freeSolid.m_angle = angle + joint.m_anchor.m_angle;
+				joint.m_freeSolid.m_angle = (angle + joint.m_anchor.m_angle + Math.PI * 2) % (Math.PI * 2);
 			} else {
-				joint.m_freeSolid.m_angle = angle - Math.PI + joint.m_anchor.m_angle;
+				joint.m_freeSolid.m_angle = (angle - Math.PI + joint.m_anchor.m_angle + Math.PI * 2) % (Math.PI * 2);
 			}
 		} else {
 			for (Solid s : m_solids) {
 				for (Joint j : s.m_joints) {
+					if (j instanceof Prismatic) {
+						continue;
+					}
+
 					if (j.m_position != s.m_position) {
 						int d_x = j.m_position.m_x - s.m_position.m_x;
 						int d_y = j.m_position.m_y - s.m_position.m_y;
