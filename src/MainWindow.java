@@ -197,7 +197,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 			Pair<Distance, Alignment> pair2 = j.hasOneDistanceAndOneAlignmentConstraints(null, null);
 			if (pair2 != null) {
-				double angle = Math.atan2(pair2.b.m_direction.getY(), pair2.b.m_direction.getX()) + ((Angle)c).m_angle;
+				double angle =(Math.atan2(pair2.b.m_direction.getY(), pair2.b.m_direction.getX())+Math.PI * 2) % (Math.PI*2) + ((Angle)c).m_angle;
 				int x = pair2.b.m_origin.m_position.m_x + (int)(Math.cos(angle) * pair2.a.m_dist);
 				int y = pair2.b.m_origin.m_position.m_y + (int)(Math.sin(angle) * pair2.a.m_dist);
 
@@ -244,7 +244,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 						int d_x = j.m_position.m_x - s.m_position.m_x;
 						int d_y = j.m_position.m_y - s.m_position.m_y;
 
-						s.m_angle = Math.atan2(-d_y, d_x);
+						s.m_angle =(Math.atan2(-d_y, d_x)+Math.PI * 2) % (Math.PI * 2);
 						break;
 					}
 				}

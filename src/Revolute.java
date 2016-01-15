@@ -20,10 +20,10 @@ public class Revolute extends Joint {
         if (m_anchor != null && m_freeSolid != null) {
             double angle = 0.0;
             if (m_anchor.m_isGround) {
-                angle = m_freeSolid.m_angle - m_anchor.m_angle;
+                angle = (m_freeSolid.m_angle - m_anchor.m_angle+Math.PI*2) % (Math.PI*2);
                 g.drawArc(m_position.m_x - 40, m_position.m_y - 40, 80, 80, (int)Math.toDegrees(m_anchor.m_angle), (int)Math.toDegrees(angle));
             } else {
-                angle = m_freeSolid.m_angle - (m_anchor.m_angle - Math.PI);
+                angle =( m_freeSolid.m_angle - (m_anchor.m_angle - Math.PI) + Math.PI *2 ) % (Math.PI *2);
                 g.drawArc(m_position.m_x - 40, m_position.m_y - 40, 80, 80, (int)Math.toDegrees(m_anchor.m_angle - Math.PI), (int)Math.toDegrees(angle));
             }
 
