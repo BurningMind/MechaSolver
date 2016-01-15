@@ -22,6 +22,8 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 	public ArrayList<Solid> m_solids;
 	public ArrayList<Joint> m_joints;
 	public ArrayList<MySlider> m_sliders;
+	public ArrayList<JTextField> m_minTextFields;
+	public ArrayList<JTextField> m_maxTextFields;
 
 	public HashSet<Constraint> m_tempConstraints;
 	public HashMap<Point, Point> m_tempPos;
@@ -29,6 +31,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 	public boolean settingValue;
 	public Ground m_ground;
 	public final Dimension DIM_INSIDEPROG = new Dimension (300, 400);
+	public final Dimension DIM_FIELD = new Dimension (50, 25);
 
 	//Constructor
 	public MainWindow() {
@@ -83,6 +86,8 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 		m_solids = new ArrayList<Solid>();
 		m_sliders = new ArrayList<MySlider>();
 		m_joints = new ArrayList<Joint>();
+		m_minTextFields = new ArrayList<JTextField>();
+		m_maxTextFields = new ArrayList<JTextField>();
 		m_tempConstraints = new HashSet<Constraint>();
 		m_tempPos = new HashMap<Point, Point>();
 		m_ground = new Ground();
@@ -99,11 +104,11 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			if (j.m_position == solid.m_position) {
 				double angleInRad = 0.0;
 				if (j.m_anchor.m_isGround) {
-	                angleInRad = (j.m_freeSolid.m_angle - j.m_anchor.m_angle);
+	                angleInRad = (j.m_freeSolid.m_angle - j.m_anchor.m_angle) % (Math.PI*2);
 	            } else {
-	                angleInRad = (j.m_freeSolid.m_angle - (j.m_anchor.m_angle - Math.PI));
+	                angleInRad = (j.m_freeSolid.m_angle - (j.m_anchor.m_angle - Math.PI)+Math.PI*2) % (Math.PI*2);
 	            }
-				System.out.println((int)Math.toDegrees(angleInRad));
+
 				settingValue = true;
 				m_sliders.get(j.m_id).setValue((int)Math.toDegrees(angleInRad));
 				settingValue = false;
@@ -120,16 +125,36 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 		jointPanel.setMaximumSize(new Dimension(300, 100));
 		jointPanel.setPreferredSize(new Dimension(300, 100));
 
-		jointPanel.add(new JLabel("Joint " + m_joints.size()));
+		JPanel textFields = new JPanel();
+		textFields.setLayout(new BoxLayout(textFields, BoxLayout.X_AXIS));
+		textFields.setMaximumSize(new Dimension(290, 100));
+		textFields.setPreferredSize(new Dimension(290, 100));
+
+		JTextField minTextField = new JTextField();
+		minTextField.setPreferredSize(DIM_FIELD);
+		minTextField.setMaximumSize(DIM_FIELD);
+		minTextField.addActionListener(this);
+		m_minTextFields.add(minTextField);
+
+		JTextField maxTextField = new JTextField();
+		maxTextField.setPreferredSize(DIM_FIELD);
+		maxTextField.setMaximumSize(DIM_FIELD);
+		maxTextField.addActionListener(this);
+		m_maxTextFields.add(maxTextField);
 
 		MySlider slider = new MySlider(MySlider.HORIZONTAL, 0, 360, 0, m_sliders.size());
 		slider.addChangeListener(this);
 
 		jointPanel.add(slider);
+		jointPanel.add(new JLabel("Joint " + m_joints.size()));
 		m_sliders.add(slider);
+		textFields.add(minTextField);
+		textFields.add(maxTextField);
 
+		jointPanel.add(textFields);
 		m_infoIP.add(jointPanel);
 		m_infoIP.revalidate();
+
 		repaint();
 	}
 
@@ -148,9 +173,9 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 					Joint joint = m_joints.get(s.m_id);
 					double angleInRad = 0.0;
 					if (joint.m_anchor.m_isGround) {
-						angleInRad = (joint.m_freeSolid.m_angle - joint.m_anchor.m_angle);
+						angleInRad = (joint.m_freeSolid.m_angle - joint.m_anchor.m_angle) % (Math.PI*2);
 					} else {
-						angleInRad = (joint.m_freeSolid.m_angle - (joint.m_anchor.m_angle - Math.PI));
+						angleInRad = (joint.m_freeSolid.m_angle - (joint.m_anchor.m_angle - Math.PI)+Math.PI*2) % (Math.PI*2);
 					}
 					settingValue = true;
 					s.setValue((int)Math.toDegrees(angleInRad));
@@ -159,6 +184,9 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			}
 			repaint();
 		}
+
+
+
 	}
 
 	public void actionPerformed(ActionEvent e) {
@@ -179,6 +207,35 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			m_joints.clear();
 			repaint();
 			m_mainArea.m_mode = MainArea.Mode.NONE;
+		} else if (e.getSource() instanceof JTextField ) {
+			boolean isMinText = false;
+			int nb = 0;
+
+			for (JTextField textField : m_minTextFields) {
+				if (e.getSource() == textField) {
+					isMinText = true;
+					System.out.println(nb);
+					String value = m_minTextFields.get(nb).getText();
+					m_sliders.get(nb).setMinimum(Integer.parseInt(value));
+					nb=0;
+					break;
+				}
+				nb++;
+			}
+			if (!isMinText) {
+				nb=0;
+				for (JTextField textField : m_maxTextFields) {
+					if (e.getSource() == textField) {
+						System.out.println(nb);
+						String value = m_maxTextFields.get(nb).getText();
+						m_sliders.get(nb).setMaximum(Integer.parseInt(value));
+						break;
+					}
+					nb++;
+				}
+			}
+
+
 		}
 	}
 
