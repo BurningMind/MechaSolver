@@ -25,6 +25,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 	public ArrayList<MySlider> m_sliders;
 	public ArrayList<JTextField> m_minTextFields;
 	public ArrayList<JTextField> m_maxTextFields;
+	public ArrayList<Engine> m_engines;
 
 	public HashSet<Constraint> m_tempConstraints;
 	public HashMap<Point, Point> m_tempPos;
@@ -93,6 +94,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 		m_joints = new ArrayList<Joint>();
 		m_minTextFields = new ArrayList<JTextField>();
 		m_maxTextFields = new ArrayList<JTextField>();
+		m_engines = new ArrayList<Engine>();
 		m_tempConstraints = new HashSet<Constraint>();
 		m_tempPos = new HashMap<Point, Point>();
 		m_ground = new Ground();
@@ -213,6 +215,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			m_infoIP.removeAll();
 			m_sliders.clear();
 			m_joints.clear();
+			m_engines.clear();
 			repaint();
 			m_mainArea.m_mode = MainArea.Mode.NONE;
 		} else if (e.getSource() instanceof JTextField ) {

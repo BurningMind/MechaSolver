@@ -278,9 +278,8 @@ public class MainArea extends JPanel implements MouseInputListener {
 				return;
 			}
 
-			Moteur engine = new Moteur (pair.a, 90, m_mainWindow);
+			m_mainWindow.m_engines.add(new Engine (pair.a, 30, m_mainWindow));
 			System.out.println("Added an engine to a joint");
-;
 		}
 
 		repaint();
