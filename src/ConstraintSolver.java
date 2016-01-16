@@ -34,7 +34,7 @@ public class ConstraintSolver {
 		solutions[0] = new Point((int)(c*x1 + e), (int)(d*x1 + f));
 		solutions[1] = new Point((int)(c*x2 + e), (int)(d*x2 + f));
 
-		if (Math.abs(solutions[0].distance(distance.m_origin.m_position) - g) >= 1.0 || Math.abs(solutions[1].distance(distance.m_origin.m_position) - g) >= 1.0) { // We round because we might not have the same EXACT distances
+		if (Math.abs(solutions[0].distance(distance.m_origin.m_position) - g) >= 1.5 || Math.abs(solutions[1].distance(distance.m_origin.m_position) - g) >= 1.5) { // We round because we might not have the same EXACT distances
 			return null;
 		}
 
