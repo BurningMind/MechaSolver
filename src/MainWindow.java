@@ -22,6 +22,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 	public ArrayList<Solid> m_solids;
 	public ArrayList<Joint> m_joints;
+	public ArrayList<Pair<Joint, Integer>> m_sliderJoints; // int is freeSolid #
 	public ArrayList<MySlider> m_sliders;
 	public ArrayList<JTextField> m_minTextFields;
 	public ArrayList<JTextField> m_maxTextFields;
@@ -92,6 +93,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 		m_solids = new ArrayList<Solid>();
 		m_sliders = new ArrayList<MySlider>();
 		m_joints = new ArrayList<Joint>();
+		m_sliderJoints = new ArrayList<Pair<Joint, Integer>>();
 		m_minTextFields = new ArrayList<JTextField>();
 		m_maxTextFields = new ArrayList<JTextField>();
 		m_engines = new ArrayList<Engine>();
@@ -108,81 +110,92 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 		m_solids.add(solid);
 
 		for (Joint j : solid.m_joints) {
-			if (j.m_position == solid.m_position) {
-				double angleInRad = 0.0;
-				if (j.m_anchor.m_isGround) {
-	                angleInRad = (j.m_freeSolid.m_angle - j.m_anchor.m_angle) % (Math.PI*2);
-	            } else {
-	                angleInRad = (j.m_freeSolid.m_angle - (j.m_anchor.m_angle - Math.PI)+Math.PI*2) % (Math.PI*2);
-	            }
+			if (j.m_anchor != solid) {
+				int freeSolidId = -1;
+				for (int i = 0; i < j.m_freeSolids.size(); i++) {
+					if (j.m_freeSolids.get(i) == solid) {
+						freeSolidId = i;
+						break;
+					}
+				}
 
-				settingValue = true;
-				m_sliders.get(j.m_id).setValue((int)Math.toDegrees(angleInRad));
-				settingValue = false;
-				break;
+				if (freeSolidId != -1) {
+					m_sliderJoints.add(new Pair<Joint, Integer>(j, freeSolidId));
+
+					JPanel jointPanel = new JPanel();
+					jointPanel.setLayout(new BoxLayout(jointPanel, BoxLayout.Y_AXIS));
+					jointPanel.setMaximumSize(new Dimension(300, 100));
+					jointPanel.setPreferredSize(new Dimension(300, 100));
+
+					JPanel textFields = new JPanel();
+					textFields.setLayout(new BoxLayout(textFields, BoxLayout.X_AXIS));
+					textFields.setMaximumSize(new Dimension(290, 100));
+					textFields.setPreferredSize(new Dimension(290, 100));
+
+					JTextField minTextField = new JTextField();
+					minTextField.setPreferredSize(DIM_FIELD);
+					minTextField.setMaximumSize(DIM_FIELD);
+					minTextField.addActionListener(this);
+					m_minTextFields.add(minTextField);
+
+					JTextField maxTextField = new JTextField();
+					maxTextField.setPreferredSize(DIM_FIELD);
+					maxTextField.setMaximumSize(DIM_FIELD);
+					maxTextField.addActionListener(this);
+					m_maxTextFields.add(maxTextField);
+
+					MySlider slider = new MySlider(MySlider.HORIZONTAL, 0, 360, 0, m_sliders.size());
+					slider.addChangeListener(this);
+
+					jointPanel.add(slider);
+					jointPanel.add(new JLabel("Joint " + j.m_id + " / FreeSolid " + freeSolidId));
+					m_sliders.add(slider);
+					textFields.add(minTextField);
+					textFields.add(maxTextField);
+
+					jointPanel.add(textFields);
+					m_infoIP.add(jointPanel);
+					m_infoIP.revalidate();
+
+					repaint();
+
+					double angleInRad = 0.0;
+					if (j.m_anchor.m_isGround) {
+		                angleInRad = (j.m_freeSolids.get(freeSolidId).m_angle - j.m_anchor.m_angle) % (Math.PI*2);
+		            } else {
+		                angleInRad = (j.m_freeSolids.get(freeSolidId).m_angle - (j.m_anchor.m_angle - Math.PI)+Math.PI*2) % (Math.PI*2);
+		            }
+
+					settingValue = true;
+					slider.setValue((int)Math.toDegrees(angleInRad));
+					settingValue = false;
+				}
 			}
 		}
 	}
 
 	public void addJoint (Joint joint) {
 		m_joints.add(joint);
-
-		JPanel jointPanel = new JPanel();
-		jointPanel.setLayout(new BoxLayout(jointPanel, BoxLayout.Y_AXIS));
-		jointPanel.setMaximumSize(new Dimension(300, 100));
-		jointPanel.setPreferredSize(new Dimension(300, 100));
-
-		JPanel textFields = new JPanel();
-		textFields.setLayout(new BoxLayout(textFields, BoxLayout.X_AXIS));
-		textFields.setMaximumSize(new Dimension(290, 100));
-		textFields.setPreferredSize(new Dimension(290, 100));
-
-		JTextField minTextField = new JTextField();
-		minTextField.setPreferredSize(DIM_FIELD);
-		minTextField.setMaximumSize(DIM_FIELD);
-		minTextField.addActionListener(this);
-		m_minTextFields.add(minTextField);
-
-		JTextField maxTextField = new JTextField();
-		maxTextField.setPreferredSize(DIM_FIELD);
-		maxTextField.setMaximumSize(DIM_FIELD);
-		maxTextField.addActionListener(this);
-		m_maxTextFields.add(maxTextField);
-
-		MySlider slider = new MySlider(MySlider.HORIZONTAL, 0, 360, 0, m_sliders.size());
-		slider.addChangeListener(this);
-
-		jointPanel.add(slider);
-		jointPanel.add(new JLabel("Joint " + m_joints.size()));
-		m_sliders.add(slider);
-		textFields.add(minTextField);
-		textFields.add(maxTextField);
-
-		jointPanel.add(textFields);
-		m_infoIP.add(jointPanel);
-		m_infoIP.revalidate();
-
-		repaint();
 	}
 
 	public void stateChanged(ChangeEvent e) {
 		MySlider slider = (MySlider)e.getSource();
 
 		if (!settingValue) {
-			if (m_joints.get(slider.m_id) instanceof Revolute) {
-				setJointAngle(m_joints.get(slider.m_id), Math.toRadians(slider.getValue()));
-			} else if (m_joints.get(slider.m_id) instanceof Prismatic) {
-				setJointDistance(m_joints.get(slider.m_id), slider.getValue());
+			if (m_sliderJoints.get(slider.m_id).a instanceof Revolute) {
+				setJointAngle(m_sliderJoints.get(slider.m_id).a, m_sliderJoints.get(slider.m_id).b, Math.toRadians(slider.getValue()));
+			} else if (m_sliderJoints.get(slider.m_id).a instanceof Prismatic) {
+				setJointDistance(m_sliderJoints.get(slider.m_id).a, slider.getValue());
 			}
 
 			for (MySlider s : m_sliders) {
 				if (s != slider) {
-					Joint joint = m_joints.get(s.m_id);
+					Pair<Joint, Integer> pair = m_sliderJoints.get(s.m_id);
 					double angleInRad = 0.0;
-					if (joint.m_anchor.m_isGround) {
-						angleInRad = (joint.m_freeSolid.m_angle - joint.m_anchor.m_angle) % (Math.PI*2);
+					if (pair.a.m_anchor.m_isGround) {
+						angleInRad = (pair.a.m_freeSolids.get(pair.b).m_angle - pair.a.m_anchor.m_angle) % (Math.PI*2);
 					} else {
-						angleInRad = (joint.m_freeSolid.m_angle - (joint.m_anchor.m_angle - Math.PI)+Math.PI*2) % (Math.PI*2);
+						angleInRad = (pair.a.m_freeSolids.get(pair.b).m_angle - (pair.a.m_anchor.m_angle - Math.PI)+Math.PI*2) % (Math.PI*2);
 					}
 					settingValue = true;
 					s.setValue((int)Math.toDegrees(angleInRad));
@@ -216,6 +229,9 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			m_sliders.clear();
 			m_joints.clear();
 			m_engines.clear();
+			m_sliderJoints.clear();
+			m_minTextFields.clear();
+			m_maxTextFields.clear();
 			repaint();
 			m_mainArea.m_mode = MainArea.Mode.NONE;
 		} else if (e.getSource() instanceof JTextField ) {
@@ -315,13 +331,13 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 		}
 	}
 
-	public void setJointAngle(Joint joint, double angle) {
+	public void setJointAngle(Joint joint, int freeSolid, double angle) {
 		removeConstraints();
 		for (Joint j : m_joints) {
 			j.m_defined = j.hasFixedConstraint();
 			j.m_visited = false;
 		}
-		setConstraint(new Angle(angle), joint);
+		setConstraint(new Angle(angle, freeSolid), joint);
 		solveConstraints(joint, null);
 
 		if (!m_hasSolution) {
@@ -331,11 +347,11 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			}
 		}
 
-		if (joint.m_freeSolid.m_joints.size() == 1) {
+		if (joint.m_freeSolids.get(freeSolid).m_joints.size() == 1) {
 			if (joint.m_anchor.m_isGround) {
-				joint.m_freeSolid.m_angle = (angle + joint.m_anchor.m_angle + Math.PI * 2) % (Math.PI * 2);
+				joint.m_freeSolids.get(freeSolid).m_angle = (angle + joint.m_anchor.m_angle + Math.PI * 2) % (Math.PI * 2);
 			} else {
-				joint.m_freeSolid.m_angle = (angle - Math.PI + joint.m_anchor.m_angle + Math.PI * 2) % (Math.PI * 2);
+				joint.m_freeSolids.get(freeSolid).m_angle = (angle - Math.PI + joint.m_anchor.m_angle + Math.PI * 2) % (Math.PI * 2);
 			}
 		} else {
 			for (Solid s : m_solids) {
@@ -365,12 +381,12 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 		Alignment align = joint.hasAlignmentConstraint(null, null);
 		if (align != null) {
-			setConstraint(new Distance(joint, dist + ((Line)joint.m_freeSolid).m_length), align.m_origin);
-			setConstraint(new Distance(align.m_origin, dist + ((Line)joint.m_freeSolid).m_length), joint);
+			setConstraint(new Distance(joint, dist + joint.m_position.distance(align.m_origin.m_position)), align.m_origin);
+			setConstraint(new Distance(align.m_origin, dist + joint.m_position.distance(align.m_origin.m_position)), joint);
 			solveConstraints(joint, null);
 		} else {
-			joint.m_freeSolid.m_offsetx = (int)(dist * Math.cos(joint.m_freeSolid.m_angle));
-			joint.m_freeSolid.m_offsety = (int)(dist * Math.sin(joint.m_freeSolid.m_angle));
+			joint.m_freeSolids.get(0).m_offsetx = (int)(dist * Math.cos(joint.m_freeSolids.get(0).m_angle));
+			joint.m_freeSolids.get(0).m_offsety = (int)(dist * Math.sin(joint.m_freeSolids.get(0).m_angle));
 		}
 
 		if (!m_hasSolution) {
@@ -672,21 +688,21 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			}
 		}
 
-		if (pair != null || pair2 != null) {
+		/*if (pair != null || pair2 != null || pair3 != null) {
 			return;
-		}
+		}*/
 
 		System.out.print("other: ");
 		for (Constraint c : j.m_constraints) {
 			if (c instanceof Distance) {
-				if (((Distance)c).m_origin == parent) {
+				if (((Distance)c).m_origin == parent || ((Distance)c).m_origin.m_defined) {
 					continue;
 				}
 
 				System.out.print("dist");
 				solveConstraints(((Distance)c).m_origin, j);
 			} else if (c instanceof Alignment) {
-				if (((Alignment)c).m_origin == parent) {
+				if (((Alignment)c).m_origin == parent || ((Alignment)c).m_origin.m_defined) {
 					continue;
 				}
 

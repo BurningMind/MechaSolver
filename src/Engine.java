@@ -18,9 +18,9 @@ public class Engine implements ActionListener{
         m_speed = speed;
 
         if (m_joint.m_anchor.m_isGround) {
-            m_currentAngle = ((m_joint.m_freeSolid.m_angle - m_joint.m_anchor.m_angle) + Math.PI*2) % (Math.PI*2);
+            m_currentAngle = ((m_joint.m_freeSolids.get(0).m_angle - m_joint.m_anchor.m_angle) + Math.PI*2) % (Math.PI*2);
         } else {
-            m_currentAngle = ((m_joint.m_freeSolid.m_angle - (m_joint.m_anchor.m_angle - Math.PI)+Math.PI*2))% (Math.PI*2);
+            m_currentAngle = ((m_joint.m_freeSolids.get(0).m_angle - (m_joint.m_anchor.m_angle - Math.PI)+Math.PI*2))% (Math.PI*2);
         }
 
         m_mainWindow = mainWindow;
@@ -30,11 +30,10 @@ public class Engine implements ActionListener{
 
     public void actionPerformed(ActionEvent e) {
         m_currentAngle += Math.toRadians(m_speed / FPS);
+        m_currentAngle %= Math.PI * 2;
 
-        m_mainWindow.settingValue = true;
         m_mainWindow.m_sliders.get(m_joint.m_id).setValue((int)Math.toDegrees(m_currentAngle));
-        m_mainWindow.setJointAngle(m_joint,m_currentAngle);
-        m_mainWindow.settingValue = false;
+        m_mainWindow.setJointAngle(m_joint, 0, m_currentAngle);
 
         m_mainWindow.repaint();
     }

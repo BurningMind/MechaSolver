@@ -216,7 +216,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 
 			if (joint != null) { // If we snap to a second joint
 				new_line.m_joints.add(joint);
-				joint.m_freeSolid = new_line;
+				joint.m_freeSolids.add(new_line);
 
 				if (m_solidCreationJoint instanceof Revolute && joint instanceof Revolute) {
 					m_solidCreationJoint.m_constraints.add(new Distance(joint, joint.m_position.distance(m_solidCreationJoint.m_position)));
@@ -235,7 +235,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 			new_line.m_joints.add(m_solidCreationJoint);
 
 			// We add the line to the initial joint
-			m_solidCreationJoint.m_freeSolid = new_line;
+			m_solidCreationJoint.m_freeSolids.add(new_line);
 			m_mainWindow.addSolid(new_line);
 
 			m_mode = Mode.LINE1;

@@ -3,8 +3,8 @@ import java.awt.*;
 public class Prismatic extends Joint {
 
     //Constructor
-    public Prismatic(Solid anchor, Solid freeSolid, Point position, int id) {
-        super(anchor, freeSolid, position, id);
+    public Prismatic(Solid anchor, Solid firstFreeSolid, Point position, int id) {
+        super(anchor, firstFreeSolid, position, id);
     }
 
     public void draw(Graphics g) {
@@ -19,12 +19,12 @@ public class Prismatic extends Joint {
             g.drawRect(m_position.m_x - 5, m_position.m_y - 5, 10, 10);
         }
 
-        if (m_anchor != null && m_freeSolid != null) {
+        /*if (m_anchor != null && m_freeSolid != null) {
             int x_offset = (int)(Math.sin(Math.atan2(m_freeSolid.m_offsety, m_freeSolid.m_offsetx)) * 10.0);
             int y_offset = (int)(Math.cos(Math.atan2(m_freeSolid.m_offsety, m_freeSolid.m_offsetx)) * 10.0);
             g.drawLine(m_position.m_x + x_offset, m_position.m_y + y_offset, m_position.m_x + m_freeSolid.m_offsetx + x_offset, m_position.m_y + m_freeSolid.m_offsety + y_offset);
 
             g.drawString(String.valueOf(Math.sqrt(m_freeSolid.m_offsetx * m_freeSolid.m_offsetx + m_freeSolid.m_offsety * m_freeSolid.m_offsety)), m_position.m_x + 20, m_position.m_y + 20);
-        }
+        }*/
     }
 }
