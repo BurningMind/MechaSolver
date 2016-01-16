@@ -1,4 +1,6 @@
-public class Point {
+import java.io.*;
+
+public class Point implements Serializable {
 
     public int m_x, m_y;
 

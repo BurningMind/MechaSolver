@@ -3,6 +3,7 @@ import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+import java.io.*;
 
 public class MainWindow extends JFrame implements ActionListener, ChangeListener {
 	JButton m_addRevoluteButton;
@@ -11,6 +12,9 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 	JButton m_addEngineButton;
 	JButton m_setSnapping;
 	JButton m_clear;
+
+	JButton m_save;
+	JButton m_open;
 
 	JLabel m_dispSolids;
 
@@ -89,6 +93,14 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 		m_clear = new JButton ("Clear");
 		m_clear.addActionListener(this);
 		toolBar.add(m_clear);
+
+		m_save = new JButton ("Save");
+		m_save.addActionListener(this);
+		toolBar.add(m_save);
+
+		m_open = new JButton ("Open");
+		m_open.addActionListener(this);
+		toolBar.add(m_open);
 
 		m_solids = new ArrayList<Solid>();
 		m_sliders = new ArrayList<MySlider>();
@@ -209,6 +221,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 	}
 
+	@SuppressWarnings("unchecked")
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == m_addRevoluteButton) {
 			m_mainArea.m_mode = MainArea.Mode.REVOLUTE;
@@ -219,15 +232,70 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 		} else if (e.getSource() == m_addEngineButton) {
 			m_mainArea.m_mode = MainArea.Mode.ENGINE;
 			System.out.println("Engine mode");
-		}else if (e.getSource() == m_setSnapping) {
+		} else if (e.getSource() == m_setSnapping) {
 			m_mainArea.m_snap = !m_mainArea.m_snap;
+		} else if (e.getSource() == m_save) {
+			try {
+				FileDialog fd = new FileDialog(this, "Save a file", FileDialog.SAVE);
+				fd.setFile("*.mecha");
+				fd.setVisible(true);
+				String filename = fd.getFile();
+				if (filename == null) {
+					return;
+				}
+
+				FileOutputStream fileOut = new FileOutputStream(filename);
+				ObjectOutputStream out = new ObjectOutputStream(fileOut);
+				out.writeObject(m_solids);
+				out.writeObject(m_joints);
+				out.writeObject(m_sliders);
+				out.writeObject(m_engines);
+				out.writeObject(m_sliderJoints);
+				out.writeObject(m_minTextFields);
+				out.writeObject(m_maxTextFields);
+				out.writeObject(m_infoIP);
+				out.close();
+				fileOut.close();
+			} catch (IOException i) {
+				i.printStackTrace();
+			}
+		} else if (e.getSource() == m_open) {
+			try {
+				FileDialog fd = new FileDialog(this, "Open a file", FileDialog.LOAD);
+				fd.setFile("*.mecha");
+				fd.setVisible(true);
+				String filename = fd.getFile();
+				if (filename == null) {
+					return;
+				}
+
+				FileInputStream fileIn = new FileInputStream(filename);
+				ObjectInputStream in = new ObjectInputStream(fileIn);
+				m_solids = (ArrayList<Solid>)in.readObject();
+				m_joints = (ArrayList<Joint>)in.readObject();
+				m_sliders = (ArrayList<MySlider>)in.readObject();
+				m_engines = (ArrayList<Engine>)in.readObject();
+				m_sliderJoints = (ArrayList<Pair<Joint, Integer>>)in.readObject();
+				m_minTextFields = (ArrayList<JTextField>)in.readObject();
+				m_maxTextFields = (ArrayList<JTextField>)in.readObject();
+				m_insideProgram.remove(m_infoIP);
+				m_infoIP = (JPanel)in.readObject();
+				m_insideProgram.add(m_infoIP, 0);
+				in.close();
+				fileIn.close();
+
+				m_insideProgram.revalidate();
+				repaint();
+			} catch (IOException i) {
+				i.printStackTrace();
+			} catch (ClassNotFoundException i) {
+				i.printStackTrace();
+			}
 		} else if (e.getSource() == m_clear) {
 			m_solids.clear();
 			m_joints.clear();
-			m_mainArea.repaint();
 			m_infoIP.removeAll();
 			m_sliders.clear();
-			m_joints.clear();
 			m_engines.clear();
 			m_sliderJoints.clear();
 			m_minTextFields.clear();

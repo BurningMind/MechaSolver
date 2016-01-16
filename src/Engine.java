@@ -1,8 +1,9 @@
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
+import java.io.*;
 
-public class Engine implements ActionListener{
+public class Engine implements ActionListener, Serializable {
 
     public Joint m_joint;
     public double m_speed;

@@ -1,7 +1,8 @@
 import java.awt.*;
 import java.util.HashSet;
+import java.io.*;
 
-abstract public class Solid {
+abstract public class Solid implements Serializable {
     public boolean m_isGround;
     public HashSet<Joint> m_joints;
     public Point m_position;

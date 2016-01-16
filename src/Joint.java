@@ -1,8 +1,9 @@
 import java.awt.*;
 import java.util.HashSet;
 import java.util.ArrayList;
+import java.io.*;
 
-abstract public class Joint {
+abstract public class Joint implements Serializable {
 
     public Solid m_anchor;
     public ArrayList<Solid> m_freeSolids;

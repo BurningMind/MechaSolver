@@ -13,3 +13,6 @@ hs_err_pid*
 
 # sources list
 sources.txt
+
+# mecha files
+*.mecha
