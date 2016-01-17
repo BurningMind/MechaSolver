@@ -186,16 +186,6 @@ public class MainArea extends JPanel implements MouseInputListener {
 
 		Line new_line = new Line(m_solidCreationJoint.m_position, Math.sqrt(d_x * d_x + d_y * d_y), Math.atan2(-d_y, d_x));
 
-		if (m_solidCreationJoint instanceof Prismatic) {
-			if (d_x > 0) {
-				new_line.m_angle = 0;
-			} else {
-				new_line.m_angle = Math.PI;
-			}
-
-			new_line.m_length = Math.abs(d_x);
-		}
-
 		return new Pair<Line, Joint>(new_line, joint);
 	}
 
@@ -255,17 +245,22 @@ public class MainArea extends JPanel implements MouseInputListener {
 			}
 
 			for (Joint j : solid.m_joints) {
-				if (j instanceof Revolute && joint instanceof Revolute) {
+				if (j.m_anchor == solid) {
 					j.m_constraints.add(new Distance(joint, joint.m_position.distance(j.m_position)));
 					joint.m_constraints.add(new Distance(j, joint.m_position.distance(j.m_position)));
-				} else if (j instanceof Prismatic || joint instanceof Prismatic) {
-					j.m_constraints.add(new Alignment(joint, new Vector(j.m_position.m_x - joint.m_position.m_x, j.m_position.m_y - joint.m_position.m_y)));
-					joint.m_constraints.add(new Alignment(j, new Vector(joint.m_position.m_x - j.m_position.m_x, joint.m_position.m_y - j.m_position.m_y)));
-				}
+				} else {
+					if (j instanceof Revolute) {
+						j.m_constraints.add(new Distance(joint, joint.m_position.distance(j.m_position)));
+						joint.m_constraints.add(new Distance(j, joint.m_position.distance(j.m_position)));
+					} else if (j instanceof Prismatic) {
+						j.m_constraints.add(new Alignment(joint, new Vector(j.m_position.m_x - joint.m_position.m_x, j.m_position.m_y - joint.m_position.m_y)));
+						joint.m_constraints.add(new Alignment(j, new Vector(joint.m_position.m_x - j.m_position.m_x, joint.m_position.m_y - j.m_position.m_y)));
+					}
 
-				if (j instanceof Prismatic && joint instanceof Revolute) {
-					solid.m_position = joint.m_position;
-					solid.m_angle = (solid.m_angle - Math.PI + Math.PI*2) % (Math.PI * 2);
+					if (j instanceof Prismatic && joint instanceof Revolute) {
+						solid.m_position = joint.m_position;
+						solid.m_angle = (solid.m_angle - Math.PI + Math.PI*2) % (Math.PI * 2);
+					}
 				}
 			}
 

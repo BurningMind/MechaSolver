@@ -26,7 +26,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 	public ArrayList<Solid> m_solids;
 	public ArrayList<Joint> m_joints;
-	public ArrayList<Pair<Joint, Integer>> m_sliderJoints; // int is freeSolid #
+	public ArrayList<Pair<Joint, Integer>> m_sliderJoints; // int is freeSolid # within joint
 	public ArrayList<MySlider> m_sliders;
 	public ArrayList<JTextField> m_minTextFields;
 	public ArrayList<JTextField> m_maxTextFields;
@@ -422,18 +422,36 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 				joint.m_freeSolids.get(freeSolid).m_angle = (angle - Math.PI + joint.m_anchor.m_angle + Math.PI * 2) % (Math.PI * 2);
 			}
 		} else {
+			HashSet<Prismatic> updatedPrismatics = new HashSet<Prismatic>();
 			for (Solid s : m_solids) {
 				for (Joint j : s.m_joints) {
-					if (j instanceof Prismatic) {
+					if (j instanceof Prismatic && j.m_position == s.m_position) {
 						continue;
 					}
 
 					if (j.m_position != s.m_position) {
+						double old_angle = s.m_angle;
 						int d_x = j.m_position.m_x - s.m_position.m_x;
 						int d_y = j.m_position.m_y - s.m_position.m_y;
 
 						s.m_angle =(Math.atan2(-d_y, d_x)+Math.PI * 2) % (Math.PI * 2);
-						break;
+
+						if (j instanceof Prismatic && !updatedPrismatics.contains(j)) {
+							double rotation_angle = s.m_angle - old_angle;
+							Alignment align = j.hasAlignmentConstraint(null, null);
+							if (align != null) {
+								align.m_direction.m_x = align.m_direction.m_x * Math.cos(rotation_angle) - align.m_direction.m_y * Math.sin(rotation_angle);
+								align.m_direction.m_y = align.m_direction.m_x * Math.sin(rotation_angle) + align.m_direction.m_y * Math.cos(rotation_angle);
+
+								Alignment align2 = align.m_origin.hasAlignmentConstraint(null, null);
+								if (align2 != null) {
+									align2.m_direction.m_x = align2.m_direction.m_x * Math.cos(-rotation_angle) - align2.m_direction.m_y * Math.sin(-rotation_angle);
+									align2.m_direction.m_y = align2.m_direction.m_x * Math.sin(-rotation_angle) + align2.m_direction.m_y * Math.cos(-rotation_angle);
+								}
+							}
+
+							updatedPrismatics.add((Prismatic)j);
+						}
 					}
 				}
 			}
@@ -464,9 +482,10 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			}
 		}
 
+		HashSet<Prismatic> updatedPrismatics = new HashSet<Prismatic>();
 		for (Solid s : m_solids) {
 			for (Joint j : s.m_joints) {
-				if (j instanceof Prismatic) {
+				if (j instanceof Prismatic && j.m_position == s.m_position) {
 					continue;
 				}
 
@@ -476,11 +495,29 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 				}
 
 				if (j.m_position != s.m_position) {
+					double old_angle = s.m_angle;
+
 					int d_x = j.m_position.m_x - s.m_position.m_x;
 					int d_y = j.m_position.m_y - s.m_position.m_y;
 
-					s.m_angle = Math.atan2(-d_y, d_x);
-					break;
+					s.m_angle = (Math.atan2(-d_y, d_x) + Math.PI * 2) % (Math.PI * 2);
+
+					if (j instanceof Prismatic &&  !updatedPrismatics.contains(j)) {
+						double rotation_angle = s.m_angle - old_angle;
+						Alignment align_ = j.hasAlignmentConstraint(null, null);
+						if (align_ != null) {
+							align_.m_direction.m_x = align_.m_direction.m_x * Math.cos(rotation_angle) - align_.m_direction.m_y * Math.sin(rotation_angle);
+							align_.m_direction.m_y = align_.m_direction.m_x * Math.sin(rotation_angle) + align_.m_direction.m_y * Math.cos(rotation_angle);
+
+							Alignment align2 = align_.m_origin.hasAlignmentConstraint(null, null);
+							if (align2 != null) {
+								align2.m_direction.m_x = align2.m_direction.m_x * Math.cos(-rotation_angle) - align2.m_direction.m_y * Math.sin(-rotation_angle);
+								align2.m_direction.m_y = align2.m_direction.m_x * Math.sin(-rotation_angle) + align2.m_direction.m_y * Math.cos(-rotation_angle);
+							}
+						}
+
+						updatedPrismatics.add((Prismatic)j);
+					}
 				}
 			}
 		}
