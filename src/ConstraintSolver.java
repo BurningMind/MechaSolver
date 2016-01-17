@@ -1,11 +1,4 @@
 public class ConstraintSolver {
-	/*public static Point[] solve(Constraint c1, Constraint c2) {
-		if (c1 instanceof Distance && c2 instanceof Alignment) {
-			return solveDistanceAlignment((Distance)c1, (Alignment)c2);
-		} else if (c1 instanceof Alignment && c2 instanceof Distance) {
-			return solveDistanceAlignment((Distance)c2, (Alignment)c1);
-		}
-	}*/
 
 	// Solutions here: http://www.wolframalpha.com/input/?i=sqrt%28%28a+-+%28e+%2B+x*c%29%29%5E2+%2B+%28b+-+%28f+%2B+x*d%29%29%5E2%29+%3D+g
 	public static Point[] solveDistanceAlignment(Distance distance, Alignment alignment) {
