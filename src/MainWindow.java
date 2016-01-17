@@ -202,15 +202,21 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			for (MySlider s : m_sliders) {
 				if (s != slider) {
 					Pair<Joint, Integer> pair = m_sliderJoints.get(s.m_id);
-					double angleInRad = 0.0;
-					if (pair.a.m_anchor.m_isGround) {
-						angleInRad = (pair.a.m_freeSolids.get(pair.b).m_angle - pair.a.m_anchor.m_angle) % ((Math.toRadians(s.getMaximum())));
-					} else {
-						angleInRad = (pair.a.m_freeSolids.get(pair.b).m_angle - (pair.a.m_anchor.m_angle - Math.PI)) % ((Math.toRadians(s.getMaximum())));
+					if (pair.a instanceof Revolute) {
+						double angleInRad = 0.0;
+						if (pair.a.m_anchor.m_isGround) {
+							angleInRad = (pair.a.m_freeSolids.get(pair.b).m_angle - pair.a.m_anchor.m_angle + Math.toRadians(s.getMaximum())) % ((Math.toRadians(s.getMaximum())));
+						} else {
+							angleInRad = (pair.a.m_freeSolids.get(pair.b).m_angle - (pair.a.m_anchor.m_angle - Math.PI) + Math.toRadians(s.getMaximum())) % ((Math.toRadians(s.getMaximum())));
+						}
+						settingValue = true;
+						s.setValue((int)Math.toDegrees(angleInRad));
+						settingValue = false;
+					} else if (pair.a instanceof Prismatic) {
+						settingValue = true;
+						s.setValue((int)(Math.abs(pair.a.m_position.distance(((Line)pair.a.m_freeSolids.get(pair.b)).m_position) - ((Line)pair.a.m_freeSolids.get(pair.b)).m_length)));
+						settingValue = false;
 					}
-					settingValue = true;
-					s.setValue((int)Math.toDegrees(angleInRad));
-					settingValue = false;
 				}
 			}
 			repaint();
@@ -471,8 +477,8 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 		Alignment align = joint.hasAlignmentConstraint(null, null);
 		if (align != null) {
-			setConstraint(new Distance(joint, dist + joint.m_position.distance(align.m_origin.m_position)), align.m_origin);
-			setConstraint(new Distance(align.m_origin, dist + joint.m_position.distance(align.m_origin.m_position)), joint);
+			setConstraint(new Distance(joint, dist + ((Line)joint.m_freeSolids.get(0)).m_length), align.m_origin);
+			setConstraint(new Distance(align.m_origin, dist + ((Line)joint.m_freeSolids.get(0)).m_length), joint);
 			solveConstraints(joint, null);
 		} else {
 			joint.m_freeSolids.get(0).m_offsetx = (int)(dist * Math.cos(joint.m_freeSolids.get(0).m_angle));
