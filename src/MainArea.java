@@ -186,7 +186,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 		int d_x = point.m_x - m_solidCreationJoint.m_position.m_x;
 		int d_y = point.m_y - m_solidCreationJoint.m_position.m_y;
 
-		Line new_line = new Line(m_solidCreationJoint.m_position, Math.sqrt(d_x * d_x + d_y * d_y), Math.atan2(-d_y, d_x), -1);
+		Line new_line = new Line(m_solidCreationJoint.m_position, Math.sqrt(d_x * d_x + d_y * d_y), (Math.atan2(-d_y, d_x) + Math.PI*2) % (Math.PI * 2), -1);
 
 		return new Pair<Line, Joint>(new_line, joint);
 	}
@@ -220,7 +220,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 
 				if (m_solidCreationJoint instanceof Prismatic && joint instanceof Revolute) {
 					new_line.m_position = joint.m_position;
-					new_line.m_angle = new_line.m_angle - Math.PI;
+					new_line.m_angle = (new_line.m_angle - Math.PI + Math.PI*2) % (Math.PI * 2);
 				}
 			}
 

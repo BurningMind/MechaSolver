@@ -163,7 +163,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 					double angleInRad = 0.0;
 					if (j.m_anchor.m_isGround) {
-		                angleInRad = (j.m_freeSolids.get(freeSolidId).m_angle - j.m_anchor.m_angle) % (Math.PI*2);
+		                angleInRad = (j.m_freeSolids.get(freeSolidId).m_angle - j.m_anchor.m_angle+Math.PI*2) % (Math.PI*2);
 		            } else {
 		                angleInRad = (j.m_freeSolids.get(freeSolidId).m_angle - (j.m_anchor.m_angle - Math.PI)+Math.PI*2) % (Math.PI*2);
 		            }
@@ -195,9 +195,9 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 					Pair<Joint, Integer> pair = m_sliderJoints.get(s.m_id);
 					double angleInRad = 0.0;
 					if (pair.a.m_anchor.m_isGround) {
-						angleInRad = (pair.a.m_freeSolids.get(pair.b).m_angle - pair.a.m_anchor.m_angle) % ((Math.toRadians(s.getMaximum())));
+						angleInRad = (pair.a.m_freeSolids.get(pair.b).m_angle - pair.a.m_anchor.m_angle + Math.toRadians(s.getMaximum())) % ((Math.toRadians(s.getMaximum())));
 					} else {
-						angleInRad = (pair.a.m_freeSolids.get(pair.b).m_angle - (pair.a.m_anchor.m_angle - Math.PI)) % ((Math.toRadians(s.getMaximum())));
+						angleInRad = (pair.a.m_freeSolids.get(pair.b).m_angle - (pair.a.m_anchor.m_angle - Math.PI) + Math.toRadians(s.getMaximum())) % ((Math.toRadians(s.getMaximum())));
 					}
 					settingValue = true;
 					s.setValue((int)Math.toDegrees(angleInRad));
@@ -394,9 +394,9 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 	            if (pair.a == joint && pair.b == freeSolid) {
 	                MySlider slider = m_sliders.get(i);
 					if (joint.m_anchor.m_isGround) {
-						joint.m_freeSolids.get(freeSolid).m_angle = (angle + joint.m_anchor.m_angle) % Math.toRadians(slider.getMaximum());
+						joint.m_freeSolids.get(freeSolid).m_angle = (angle + joint.m_anchor.m_angle + Math.toRadians(slider.getMaximum())) % Math.toRadians(slider.getMaximum());
 					} else {
-						joint.m_freeSolids.get(freeSolid).m_angle = (angle - Math.PI + joint.m_anchor.m_angle) % Math.toRadians(slider.getMaximum());
+						joint.m_freeSolids.get(freeSolid).m_angle = (angle - Math.PI + joint.m_anchor.m_angle + Math.toRadians(slider.getMaximum())) % Math.toRadians(slider.getMaximum());
 					}
 					break;
 	            }
