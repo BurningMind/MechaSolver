@@ -8,14 +8,16 @@ abstract public class Solid implements Serializable {
     public Point m_position;
     public int m_offsetx = 0;
     public int m_offsety = 0;
+    public int m_id;
     public double m_angle;
 
     //Constructor
-    public Solid (Point origin, double angle) {
+    public Solid (Point origin, double angle, int id) {
         m_joints = new HashSet<Joint>();
 
         m_position = origin;
         m_angle = angle;
+        m_id = id;
     }
 
     abstract public void draw(Graphics g);

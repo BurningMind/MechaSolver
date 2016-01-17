@@ -5,8 +5,8 @@ public class Line extends Solid {
 	public final int WIDTH_LINE = 2;
 
 	//Constructor
-	public Line(Point origin, double length, double angle) {
-		super (origin, angle);
+	public Line(Point origin, double length, double angle, int id) {
+		super (origin, angle, id);
 		m_length = length;
 	}
 
@@ -53,6 +53,11 @@ public class Line extends Solid {
 
 	public void draw(Graphics g) {
 		g.fillPolygon(getXCoord(getRectangle()), getYCoord(getRectangle()), 4);
+		if (m_id != -1) {
+			g.drawString(String.valueOf(m_id),
+			(int)(m_position.m_x + m_length/2*Math.cos(m_angle) + 10 * Math.cos(m_angle+Math.PI/2)),
+			(int)(m_position.m_y - m_length/2*Math.sin(m_angle) - 10 * Math.sin(m_angle+Math.PI/2)));
+		}
 	}
 
 	public Point getClosePoint(Point p, double snapping_distance) {

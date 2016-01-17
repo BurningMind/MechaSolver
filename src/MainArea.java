@@ -10,7 +10,8 @@ public class MainArea extends JPanel implements MouseInputListener {
 		PRISMATIC,
 		LINE1,
 		LINE2,
-		ENGINE
+		ENGINE,
+		ENGINE2
 	}
 
 	public final double SNAPPING_DISTANCE = 20.0;
@@ -20,6 +21,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 	public boolean m_snap = true;
 
 	private Joint m_solidCreationJoint;
+	private Joint m_engineCreationJoint;
 	private Solid m_tempSolid;
 	private Joint m_tempJoint;
 
@@ -184,7 +186,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 		int d_x = point.m_x - m_solidCreationJoint.m_position.m_x;
 		int d_y = point.m_y - m_solidCreationJoint.m_position.m_y;
 
-		Line new_line = new Line(m_solidCreationJoint.m_position, Math.sqrt(d_x * d_x + d_y * d_y), Math.atan2(-d_y, d_x));
+		Line new_line = new Line(m_solidCreationJoint.m_position, Math.sqrt(d_x * d_x + d_y * d_y), Math.atan2(-d_y, d_x), -1);
 
 		return new Pair<Line, Joint>(new_line, joint);
 	}
@@ -227,6 +229,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 			// We add the line to the initial joint
 			m_solidCreationJoint.m_freeSolids.add(new_line);
 			m_mainWindow.addSolid(new_line);
+			new_line.m_id = m_mainWindow.m_solids.size();
 
 			m_mode = Mode.LINE1;
 		} else if (m_mode == Mode.REVOLUTE || m_mode == Mode.PRISMATIC) { // We create a joint
@@ -241,39 +244,65 @@ public class MainArea extends JPanel implements MouseInputListener {
 			if (solid.m_isGround) {
 				joint.m_constraints.add(new Fixed());
 			} else {
-				solid.m_joints.add(joint);
-			}
-
-			for (Joint j : solid.m_joints) {
-				if (j.m_anchor == solid) {
-					j.m_constraints.add(new Distance(joint, joint.m_position.distance(j.m_position)));
-					joint.m_constraints.add(new Distance(j, joint.m_position.distance(j.m_position)));
-				} else {
-					if (j instanceof Revolute) {
+				for (Joint j : solid.m_joints) {
+					if (j.m_anchor == solid) {
 						j.m_constraints.add(new Distance(joint, joint.m_position.distance(j.m_position)));
 						joint.m_constraints.add(new Distance(j, joint.m_position.distance(j.m_position)));
-					} else if (j instanceof Prismatic) {
-						j.m_constraints.add(new Alignment(joint, new Vector(j.m_position.m_x - joint.m_position.m_x, j.m_position.m_y - joint.m_position.m_y)));
-						joint.m_constraints.add(new Alignment(j, new Vector(joint.m_position.m_x - j.m_position.m_x, joint.m_position.m_y - j.m_position.m_y)));
-					}
+					} else {
+						if (j instanceof Revolute) {
+							j.m_constraints.add(new Distance(joint, joint.m_position.distance(j.m_position)));
+							joint.m_constraints.add(new Distance(j, joint.m_position.distance(j.m_position)));
+						} else if (j instanceof Prismatic) {
+							j.m_constraints.add(new Alignment(joint, new Vector(j.m_position.m_x - joint.m_position.m_x, j.m_position.m_y - joint.m_position.m_y)));
+							joint.m_constraints.add(new Alignment(j, new Vector(joint.m_position.m_x - j.m_position.m_x, joint.m_position.m_y - j.m_position.m_y)));
+						}
 
-					if (j instanceof Prismatic && joint instanceof Revolute) {
-						solid.m_position = joint.m_position;
-						solid.m_angle = (solid.m_angle - Math.PI + Math.PI*2) % (Math.PI * 2);
+						if (j instanceof Prismatic && joint instanceof Revolute) {
+							solid.m_position = joint.m_position;
+							solid.m_angle = (solid.m_angle - Math.PI + Math.PI*2) % (Math.PI * 2);
+						}
 					}
 				}
+
+				solid.m_joints.add(joint);
 			}
 
 			m_mainWindow.addJoint(joint);
 		} else if ( m_mode == Mode.ENGINE ) {
 			Pair<Joint, Point> pair = getNearbyJoint(new Point(e.getX(), e.getY()));
-			System.out.println("Joint found");
 
 			if (pair.a == null) {
 				return;
 			}
 
-			m_mainWindow.m_engines.add(new Engine (pair.a, 30, m_mainWindow));
+			m_engineCreationJoint = pair.a;
+
+			System.out.println("Joint found");
+			m_mode = Mode.ENGINE2;
+
+		} else if ( m_mode == Mode.ENGINE2 ) {
+			System.out.println("Engine2");
+			Pair<Solid,Point> pair2 = getNearbySolidAndPoint (new Point(e.getX(), e.getY()));
+
+			if (pair2.a == null) {
+				return;
+			}
+
+			System.out.println("Engine found");
+			int freeSolidId = -1;
+			for (int i = 0; i < m_engineCreationJoint.m_freeSolids.size(); i++) {
+				if (m_engineCreationJoint.m_freeSolids.get(i) == pair2.a) {
+					freeSolidId = i;
+					break;
+				}
+			}
+
+			if (freeSolidId == -1) {
+				return;
+			}
+
+			m_mainWindow.m_engines.add(new Engine (m_engineCreationJoint, freeSolidId, 30, m_mainWindow));
+
 			System.out.println("Added an engine to a joint");
 		}
 

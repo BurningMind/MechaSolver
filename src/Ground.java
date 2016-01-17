@@ -4,7 +4,7 @@ public class Ground extends Solid {
 
 	//Constructor
 	public Ground() {
-		super(new Point(0, 0), 0.0);
+		super(new Point(0, 0), 0.0, 0);
 		m_isGround = true;
 	}
 
