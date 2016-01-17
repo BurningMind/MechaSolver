@@ -422,7 +422,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 						s.m_angle =(Math.atan2(-d_y, d_x)+Math.PI * 2) % (Math.PI * 2);
 
-						if (j instanceof Prismatic && !updatedPrismatics.contains(j)) {
+						if (j instanceof Prismatic && !updatedPrismatics.contains(j) && Math.abs(s.m_angle - old_angle) >= Math.toRadians(1)) {
 							double rotation_angle = s.m_angle - old_angle;
 							Alignment align = j.hasAlignmentConstraint(null, null);
 							if (align != null) {
