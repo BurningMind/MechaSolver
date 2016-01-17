@@ -28,6 +28,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 	public ArrayList<Joint> m_joints;
 	public ArrayList<Pair<Joint, Integer>> m_sliderJoints; // int is freeSolid # within joint
 	public ArrayList<MySlider> m_sliders;
+	public ArrayList<JTextField> m_minTextFields;
 	public ArrayList<JTextField> m_maxTextFields;
 	public ArrayList<Engine> m_engines;
 
@@ -104,6 +105,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 		m_sliders = new ArrayList<MySlider>();
 		m_joints = new ArrayList<Joint>();
 		m_sliderJoints = new ArrayList<Pair<Joint, Integer>>();
+		m_minTextFields = new ArrayList<JTextField>();
 		m_maxTextFields = new ArrayList<JTextField>();
 		m_engines = new ArrayList<Engine>();
 		m_tempConstraints = new HashSet<Constraint>();
@@ -141,6 +143,12 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 					textFields.setMaximumSize(new Dimension(290, 100));
 					textFields.setPreferredSize(new Dimension(290, 100));
 
+					JTextField minTextField = new JTextField();
+					minTextField.setPreferredSize(DIM_FIELD);
+					minTextField.setMaximumSize(DIM_FIELD);
+					minTextField.addActionListener(this);
+					m_minTextFields.add(minTextField);
+
 					JTextField maxTextField = new JTextField();
 					maxTextField.setPreferredSize(DIM_FIELD);
 					maxTextField.setMaximumSize(DIM_FIELD);
@@ -153,6 +161,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 					jointPanel.add(slider);
 					jointPanel.add(new JLabel("Joint " + j.m_id + " / FreeSolid " + freeSolidId));
 					m_sliders.add(slider);
+					textFields.add(minTextField);
 					textFields.add(maxTextField);
 
 					jointPanel.add(textFields);
@@ -163,7 +172,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 					double angleInRad = 0.0;
 					if (j.m_anchor.m_isGround) {
-		                angleInRad = (j.m_freeSolids.get(freeSolidId).m_angle - j.m_anchor.m_angle+Math.PI*2) % (Math.PI*2);
+		                angleInRad = (j.m_freeSolids.get(freeSolidId).m_angle - j.m_anchor.m_angle) % (Math.PI*2);
 		            } else {
 		                angleInRad = (j.m_freeSolids.get(freeSolidId).m_angle - (j.m_anchor.m_angle - Math.PI)+Math.PI*2) % (Math.PI*2);
 		            }
@@ -227,7 +236,6 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			m_mainArea.m_mode = MainArea.Mode.LINE1;
 		} else if (e.getSource() == m_addEngineButton) {
 			m_mainArea.m_mode = MainArea.Mode.ENGINE;
-			System.out.println("Engine mode");
 		} else if (e.getSource() == m_setSnapping) {
 			m_mainArea.m_snap = !m_mainArea.m_snap;
 		} else if (e.getSource() == m_save) {
@@ -247,6 +255,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 				out.writeObject(m_sliders);
 				out.writeObject(m_engines);
 				out.writeObject(m_sliderJoints);
+				out.writeObject(m_minTextFields);
 				out.writeObject(m_maxTextFields);
 				out.writeObject(m_infoIP);
 				out.close();
@@ -271,6 +280,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 				m_sliders = (ArrayList<MySlider>)in.readObject();
 				m_engines = (ArrayList<Engine>)in.readObject();
 				m_sliderJoints = (ArrayList<Pair<Joint, Integer>>)in.readObject();
+				m_minTextFields = (ArrayList<JTextField>)in.readObject();
 				m_maxTextFields = (ArrayList<JTextField>)in.readObject();
 				m_insideProgram.remove(m_infoIP);
 				m_infoIP = (JPanel)in.readObject();
@@ -295,19 +305,34 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			}
 			m_engines.clear();
 			m_sliderJoints.clear();
+			m_minTextFields.clear();
 			m_maxTextFields.clear();
 			repaint();
 			m_mainArea.m_mode = MainArea.Mode.NONE;
 		} else if (e.getSource() instanceof JTextField ) {
-			for (int j =0; j<m_maxTextFields.size(); j++) {
-				JTextField textField = m_maxTextFields.get(j);
+
+			boolean isMinText = false;
+
+			for (int i =0; i<m_minTextFields.size(); i++) {
+				JTextField textField = m_minTextFields.get(i);
 				if (e.getSource() == textField) {
-					System.out.println(j);
-					String value = m_maxTextFields.get(j).getText();
-					settingValue = true;
-					m_sliders.get(j).setMaximum(Integer.parseInt(value));
-					settingValue = false;
+					isMinText = true;
+					String value = m_minTextFields.get(i).getText();
+					m_sliders.get(i).setMinimum(Integer.parseInt(value));
 					break;
+				}
+			}
+
+			if (!isMinText) {
+				for (int j =0; j<m_maxTextFields.size(); j++) {
+					JTextField textField = m_maxTextFields.get(j);
+					if (e.getSource() == textField) {
+						String value = m_maxTextFields.get(j).getText();
+						settingValue = true;
+						m_sliders.get(j).setMaximum(Integer.parseInt(value));
+						settingValue = false;
+						break;
+					}
 				}
 			}
 		}
@@ -361,7 +386,6 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			Pair<Distance, Alignment> pair2 = j.hasOneDistanceAndOneAlignmentConstraints(null, null);
 			if (pair2 != null && !j.hasFixedConstraint()) {
 				double angle =(Math.atan2(pair2.b.m_direction.m_y, pair2.b.m_direction.m_x) + ((Angle)c).m_angle + Math.PI * 2) % (Math.PI*2);
-				System.out.println(angle);
 				int x = pair2.b.m_origin.m_position.m_x + (int)(Math.cos(angle) * pair2.a.m_dist);
 				int y = pair2.b.m_origin.m_position.m_y + (int)(Math.sin(angle) * pair2.a.m_dist);
 
@@ -400,9 +424,9 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 	            if (pair.a == joint && pair.b == freeSolid) {
 	                MySlider slider = m_sliders.get(i);
 					if (joint.m_anchor.m_isGround) {
-						joint.m_freeSolids.get(freeSolid).m_angle = (angle + joint.m_anchor.m_angle + Math.toRadians(slider.getMaximum())) % Math.toRadians(slider.getMaximum());
+						joint.m_freeSolids.get(freeSolid).m_angle = (angle + joint.m_anchor.m_angle) % Math.toRadians(slider.getMaximum());
 					} else {
-						joint.m_freeSolids.get(freeSolid).m_angle = (angle - Math.PI + joint.m_anchor.m_angle + Math.toRadians(slider.getMaximum())) % Math.toRadians(slider.getMaximum());
+						joint.m_freeSolids.get(freeSolid).m_angle = (angle - Math.PI + joint.m_anchor.m_angle) % Math.toRadians(slider.getMaximum());
 					}
 					break;
 	            }
@@ -510,40 +534,32 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 	}
 
 	public void solveConstraints(Joint j, Joint parent) {
-		System.out.print("Joint " + j.m_id + ": ");
-
 		if (j.m_visited) {
 			return;
 		}
 		j.m_visited = true;
 
 		if (j.m_defined && parent != null && parent.m_defined) {
-			System.out.println("ignore");
 			return;
 		}
 
 		if (j.hasFixedConstraint()) {
-			System.out.print("fixed");
-
 			for (Constraint c : j.m_constraints) {
 				if (c instanceof Distance) {
 					if (((Distance)c).m_origin == parent || ((Distance)c).m_origin.m_defined) {
 						continue;
 					}
 
-					System.out.print(" ...with dist");
 					solveConstraints(((Distance)c).m_origin, j);
 				} else if (c instanceof Alignment) {
 					if (((Alignment)c).m_origin == parent || ((Alignment)c).m_origin.m_defined) {
 						continue;
 					}
 
-					System.out.print(" ...with align");
 					solveConstraints(((Alignment)c).m_origin, j);
 				}
 			}
 
-			System.out.println(" done fixed");
 			return;
 		}
 
@@ -552,13 +568,11 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 		Pair<Distance, Angle> pair3;
 
 		if (parent != null && parent.m_defined) {
-			System.out.print("... with parent defined ");
 			pair = j.hasTwoDistanceConstraints(null, parent);
 			pair2 = j.hasOneDistanceAndOneAlignmentConstraints(null, parent);
 			pair3 = j.hasOneDistanceAndLinkedAngle(null, parent);
 
 			if (pair3 != null) {
-				System.out.print("... with dist angle ");
 				Point new_point = ConstraintSolver.solveDistanceAngle(pair3.a, pair3.b);
 
 				m_tempPos.put(j.m_position, new Point(j.m_position.m_x, j.m_position.m_y));
@@ -573,21 +587,17 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 							continue;
 						}
 
-						System.out.print("dist");
 						solveConstraints(((Distance)c).m_origin, j);
 					} else if (c instanceof Alignment) {
 						if (((Alignment)c).m_origin == parent) {
 							continue;
 						}
 
-						System.out.print("align");
 						solveConstraints(((Alignment)c).m_origin, j);
 					}
 				}
 			} else if (pair2 != null) {
-				System.out.print("... with dist align ");
 				if (pair2.a.m_origin == parent && pair2.b.m_origin == parent) {
-					System.out.print("... with both from parent ");
 					Point[] new_points = ConstraintSolver.solveDistanceAlignment(pair2.a, pair2.b);
 
 					if (new_points != null && m_hasSolution) {
@@ -612,24 +622,20 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 								continue;
 							}
 
-							System.out.print("dist");
 							solveConstraints(((Distance)c).m_origin, j);
 						} else if (c instanceof Alignment) {
 							if (((Alignment)c).m_origin == parent) {
 								continue;
 							}
 
-							System.out.print("align");
 							solveConstraints(((Alignment)c).m_origin, j);
 						}
 					}
 				} else {
 					if (pair2.a.m_origin != parent) {
-						System.out.print("... with a not from parent ");
 						solveConstraints(pair2.a.m_origin, j);
 					}
 					if (pair2.b.m_origin != parent) {
-						System.out.print("... with b not from parent ");
 						solveConstraints(pair2.b.m_origin, j);
 					}
 
@@ -665,15 +671,10 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 					j.m_defined = true;
 				}
-				System.out.println(" done dist align ");
-			} else if (pair != null) {
-				System.out.print("... with dist dist ");
-				if (pair.a.m_origin != parent) {
-					System.out.print("... with a not from parent ");
+			} else if (pair != null) {				if (pair.a.m_origin != parent) {
 					solveConstraints(pair.a.m_origin, j);
 				}
 				if (pair.b.m_origin != parent) {
-					System.out.print("... with b not from parent ");
 					solveConstraints(pair.b.m_origin, j);
 				}
 
@@ -708,16 +709,13 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 				}
 
 				j.m_defined = true;
-				System.out.println(" done dist dist");
 			}
 		} else {
-			System.out.print("... with parent not defined ");
 			pair = j.hasTwoDistanceConstraints(parent, null);
 			pair2 = j.hasOneDistanceAndOneAlignmentConstraints(parent, null);
 			pair3 = null;
 
 			if (pair != null) {
-				System.out.println("... with dist dist ");
 				solveConstraints(pair.a.m_origin, j);
 				solveConstraints(pair.b.m_origin, j);
 				Point[] new_points = ConstraintSolver.solveDistanceDistance(pair.a, pair.b);
@@ -751,9 +749,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 				}
 
 				j.m_defined = true;
-				System.out.println(" done dist dist");
 			} else if (pair2 != null) {
-				System.out.println("... with dist align");
 				solveConstraints(pair2.a.m_origin, j);
 				solveConstraints(pair2.b.m_origin, j);
 				Point[] new_points = ConstraintSolver.solveDistanceAlignment(pair2.a, pair2.b);
@@ -787,7 +783,6 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 				}
 
 				j.m_defined = true;
-				System.out.println(" done dist align");
 			}
 		}
 
@@ -795,24 +790,20 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			return;
 		}*/
 
-		System.out.print("other: ");
 		for (Constraint c : j.m_constraints) {
 			if (c instanceof Distance) {
 				if (((Distance)c).m_origin == parent || ((Distance)c).m_origin.m_defined) {
 					continue;
 				}
 
-				System.out.print("dist");
 				solveConstraints(((Distance)c).m_origin, j);
 			} else if (c instanceof Alignment) {
 				if (((Alignment)c).m_origin == parent || ((Alignment)c).m_origin.m_defined) {
 					continue;
 				}
 
-				System.out.print("align");
 				solveConstraints(((Alignment)c).m_origin, j);
 			}
 		}
-		System.out.println();
 	}
 }

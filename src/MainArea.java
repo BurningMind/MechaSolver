@@ -186,7 +186,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 		int d_x = point.m_x - m_solidCreationJoint.m_position.m_x;
 		int d_y = point.m_y - m_solidCreationJoint.m_position.m_y;
 
-		Line new_line = new Line(m_solidCreationJoint.m_position, Math.sqrt(d_x * d_x + d_y * d_y), (Math.atan2(-d_y, d_x) + Math.PI*2) % (Math.PI * 2), -1);
+		Line new_line = new Line(m_solidCreationJoint.m_position, Math.sqrt(d_x * d_x + d_y * d_y), Math.atan2(-d_y, d_x), -1);
 
 		return new Pair<Line, Joint>(new_line, joint);
 	}
@@ -220,7 +220,7 @@ public class MainArea extends JPanel implements MouseInputListener {
 
 				if (m_solidCreationJoint instanceof Prismatic && joint instanceof Revolute) {
 					new_line.m_position = joint.m_position;
-					new_line.m_angle = (new_line.m_angle - Math.PI + Math.PI*2) % (Math.PI * 2);
+					new_line.m_angle = new_line.m_angle - Math.PI;
 				}
 			}
 
@@ -277,18 +277,15 @@ public class MainArea extends JPanel implements MouseInputListener {
 
 			m_engineCreationJoint = pair.a;
 
-			System.out.println("Joint found");
 			m_mode = Mode.ENGINE2;
 
 		} else if ( m_mode == Mode.ENGINE2 ) {
-			System.out.println("Engine2");
 			Pair<Solid,Point> pair2 = getNearbySolidAndPoint (new Point(e.getX(), e.getY()));
 
 			if (pair2.a == null) {
 				return;
 			}
 
-			System.out.println("Engine found");
 			int freeSolidId = -1;
 			for (int i = 0; i < m_engineCreationJoint.m_freeSolids.size(); i++) {
 				if (m_engineCreationJoint.m_freeSolids.get(i) == pair2.a) {
@@ -303,7 +300,6 @@ public class MainArea extends JPanel implements MouseInputListener {
 
 			m_mainWindow.m_engines.add(new Engine (m_engineCreationJoint, freeSolidId, 30, m_mainWindow));
 
-			System.out.println("Added an engine to a joint");
 		}
 
 		repaint();
