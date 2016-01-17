@@ -55,8 +55,8 @@ public class Line extends Solid {
 		g.fillPolygon(getXCoord(getRectangle()), getYCoord(getRectangle()), 4);
 		if (m_id != -1) {
 			g.drawString(String.valueOf(m_id),
-			(int)(m_position.m_x + m_length/2*Math.cos(m_angle) + 10 * Math.cos(m_angle+Math.PI/2)),
-			(int)(m_position.m_y - m_length/2*Math.sin(m_angle) - 10 * Math.sin(m_angle+Math.PI/2)));
+			(int)(m_position.m_x + m_length/2*Math.cos(m_angle) + 15 * Math.cos(m_angle+Math.PI/2)),
+			(int)(m_position.m_y - m_length/2*Math.sin(m_angle) - 15* Math.sin(m_angle+Math.PI/2)));
 		}
 	}
 
