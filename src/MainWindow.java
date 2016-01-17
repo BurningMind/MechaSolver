@@ -34,9 +34,12 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 	public HashSet<Constraint> m_tempConstraints;
 	public HashMap<Point, Point> m_tempPos;
+
 	public boolean m_hasSolution;
 	public boolean settingValue;
+
 	public Ground m_ground;
+
 	public final Dimension DIM_INSIDEPROG = new Dimension (300, 400);
 	public final Dimension DIM_FIELD = new Dimension (50, 25);
 
@@ -205,9 +208,9 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 					Pair<Joint, Integer> pair = m_sliderJoints.get(s.m_id);
 					double angleInRad = 0.0;
 					if (pair.a.m_anchor.m_isGround) {
-						angleInRad = (pair.a.m_freeSolids.get(pair.b).m_angle - pair.a.m_anchor.m_angle) % (Math.PI*2);
+						angleInRad = (pair.a.m_freeSolids.get(pair.b).m_angle - pair.a.m_anchor.m_angle) % ((Math.toRadians(s.getMaximum())));
 					} else {
-						angleInRad = (pair.a.m_freeSolids.get(pair.b).m_angle - (pair.a.m_anchor.m_angle - Math.PI)+Math.PI*2) % (Math.PI*2);
+						angleInRad = (pair.a.m_freeSolids.get(pair.b).m_angle - (pair.a.m_anchor.m_angle - Math.PI)) % ((Math.toRadians(s.getMaximum())));
 					}
 					settingValue = true;
 					s.setValue((int)Math.toDegrees(angleInRad));
@@ -296,6 +299,9 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			m_joints.clear();
 			m_infoIP.removeAll();
 			m_sliders.clear();
+			for (Engine engine : m_engines) {
+				engine.m_timer.stop();
+			}
 			m_engines.clear();
 			m_sliderJoints.clear();
 			m_minTextFields.clear();
@@ -303,34 +309,33 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			repaint();
 			m_mainArea.m_mode = MainArea.Mode.NONE;
 		} else if (e.getSource() instanceof JTextField ) {
-			boolean isMinText = false;
-			int nb = 0;
 
-			for (JTextField textField : m_minTextFields) {
+			boolean isMinText = false;
+
+			for (int i =0; i<m_minTextFields.size(); i++) {
+				JTextField textField = m_minTextFields.get(i);
 				if (e.getSource() == textField) {
 					isMinText = true;
-					System.out.println(nb);
-					String value = m_minTextFields.get(nb).getText();
-					m_sliders.get(nb).setMinimum(Integer.parseInt(value));
-					nb=0;
+					System.out.println(i);
+					String value = m_minTextFields.get(i).getText();
+					m_sliders.get(i).setMinimum(Integer.parseInt(value));
 					break;
 				}
-				nb++;
 			}
+
 			if (!isMinText) {
-				nb=0;
-				for (JTextField textField : m_maxTextFields) {
+				for (int j =0; j<m_maxTextFields.size(); j++) {
+					JTextField textField = m_maxTextFields.get(j);
 					if (e.getSource() == textField) {
-						System.out.println(nb);
-						String value = m_maxTextFields.get(nb).getText();
-						m_sliders.get(nb).setMaximum(Integer.parseInt(value));
+						System.out.println(j);
+						String value = m_maxTextFields.get(j).getText();
+						settingValue = true;
+						m_sliders.get(j).setMaximum(Integer.parseInt(value));
+						settingValue = false;
 						break;
 					}
-					nb++;
 				}
 			}
-
-
 		}
 	}
 
@@ -362,7 +367,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			}*/
 
 			Pair<Distance, Distance> pair = j.hasTwoDistanceConstraints(null, null);
-			if (pair != null) {
+			if (pair != null && !j.hasFixedConstraint()) {
 				double dist = Math.sqrt(Math.pow(pair.a.m_dist, 2) + Math.pow(pair.b.m_dist, 2) - 2*pair.a.m_dist*pair.b.m_dist*Math.cos(((Angle)c).m_angle));
 
 				if (!pair.a.m_origin.hasFixedConstraint()) {
@@ -380,7 +385,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 			}
 
 			Pair<Distance, Alignment> pair2 = j.hasOneDistanceAndOneAlignmentConstraints(null, null);
-			if (pair2 != null) {
+			if (pair2 != null && !j.hasFixedConstraint()) {
 				double angle =(Math.atan2(pair2.b.m_direction.m_y, pair2.b.m_direction.m_x) + ((Angle)c).m_angle + Math.PI * 2) % (Math.PI*2);
 				System.out.println(angle);
 				int x = pair2.b.m_origin.m_position.m_x + (int)(Math.cos(angle) * pair2.a.m_dist);
@@ -416,11 +421,18 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 		}
 
 		if (joint.m_freeSolids.get(freeSolid).m_joints.size() == 1) {
-			if (joint.m_anchor.m_isGround) {
-				joint.m_freeSolids.get(freeSolid).m_angle = (angle + joint.m_anchor.m_angle + Math.PI * 2) % (Math.PI * 2);
-			} else {
-				joint.m_freeSolids.get(freeSolid).m_angle = (angle - Math.PI + joint.m_anchor.m_angle + Math.PI * 2) % (Math.PI * 2);
-			}
+			for (int i =0; i< m_sliderJoints.size(); i++ ) {
+	            Pair<Joint, Integer> pair = m_sliderJoints.get(i);
+	            if (pair.a == joint && pair.b == freeSolid) {
+	                MySlider slider = m_sliders.get(i);
+					if (joint.m_anchor.m_isGround) {
+						joint.m_freeSolids.get(freeSolid).m_angle = (angle + joint.m_anchor.m_angle) % Math.toRadians(slider.getMaximum());
+					} else {
+						joint.m_freeSolids.get(freeSolid).m_angle = (angle - Math.PI + joint.m_anchor.m_angle) % Math.toRadians(slider.getMaximum());
+					}
+					break;
+	            }
+	        }
 		} else {
 			HashSet<Prismatic> updatedPrismatics = new HashSet<Prismatic>();
 			for (Solid s : m_solids) {
@@ -538,11 +550,23 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 		if (j.hasFixedConstraint()) {
 			System.out.print("fixed");
-			Distance d = j.hasDistanceConstraint(parent, null);
 
-			if (d != null) {
-				System.out.print("... with dist ");
-				solveConstraints(d.m_origin, j);
+			for (Constraint c : j.m_constraints) {
+				if (c instanceof Distance) {
+					if (((Distance)c).m_origin == parent || ((Distance)c).m_origin.m_defined) {
+						continue;
+					}
+
+					System.out.print(" ...with dist");
+					solveConstraints(((Distance)c).m_origin, j);
+				} else if (c instanceof Alignment) {
+					if (((Alignment)c).m_origin == parent || ((Alignment)c).m_origin.m_defined) {
+						continue;
+					}
+
+					System.out.print(" ...with align");
+					solveConstraints(((Alignment)c).m_origin, j);
+				}
 			}
 
 			System.out.println(" done fixed");

@@ -53,7 +53,9 @@ abstract public class Joint implements Serializable {
                 if (((Distance)c).m_origin == priority || ((Distance)c).m_origin.m_defined) {
                     for (Constraint c2 : ((Distance)c).m_origin.m_constraints) {
                         if (c2 instanceof Angle) {
-                            return new Pair<Distance, Angle>((Distance)c, (Angle)c2);
+                            if (((Distance)c).m_origin.m_freeSolids.get(((Angle)c2).m_freeSolid) == m_anchor) {
+                                return new Pair<Distance, Angle>((Distance)c, (Angle)c2);
+                            }
                         }
                     }
                 }
@@ -68,7 +70,9 @@ abstract public class Joint implements Serializable {
 
                 for (Constraint c2 : ((Distance)c).m_origin.m_constraints) {
                     if (c2 instanceof Angle) {
-                        return new Pair<Distance, Angle>((Distance)c, (Angle)c2);
+                        if (((Distance)c).m_origin.m_freeSolids.get(((Angle)c2).m_freeSolid) == m_anchor) {
+                            return new Pair<Distance, Angle>((Distance)c, (Angle)c2);
+                        }
                     }
                 }
             }
@@ -127,7 +131,7 @@ abstract public class Joint implements Serializable {
                 if (((Distance)c).m_origin == priority || ((Distance)c).m_origin.m_defined) {
                     if (counter == 0) {
                         d1 = (Distance)c;
-                    } else if (counter == 1) {
+                    } else if (counter == 1 && ((Distance)c).m_origin != d1.m_origin) {
                         d2 = (Distance)c;
                     } else {
                         break;
@@ -145,7 +149,7 @@ abstract public class Joint implements Serializable {
 
                 if (counter == 0) {
                     d1 = (Distance)c;
-                } else if (counter == 1) {
+                } else if (counter == 1 && ((Distance)c).m_origin != d1.m_origin) {
                     d2 = (Distance)c;
                 } else {
                     break;
