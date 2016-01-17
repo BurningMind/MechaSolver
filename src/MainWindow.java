@@ -20,7 +20,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 
 	JPanel m_insideProgram;
 	JPanel m_infoIP;
-	JPanel m_exeIP;
+
 
 	MainArea m_mainArea;
 
@@ -63,11 +63,7 @@ public class MainWindow extends JFrame implements ActionListener, ChangeListener
 		m_infoIP.setMinimumSize(new Dimension(300, 400));
 		m_infoIP.setPreferredSize(new Dimension(300, 400));
 
-		m_exeIP = new JPanel();
-		m_exeIP.setBackground(Color.GRAY);
-
 		m_insideProgram.add(m_infoIP);
-		m_insideProgram.add(m_exeIP);
 		pane.add(m_insideProgram, BorderLayout.LINE_END);
 
 		JToolBar toolBar = new JToolBar();
